@@ -1,0 +1,96 @@
+[0.009s] Invoking command in '/home/stc/arm_ws/build/my_package': /usr/bin/cmake --build /home/stc/arm_ws/build/my_package -- -j12 -l12
+[0.029s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.106s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.110s] -- Found rclpy: 3.3.19 (/opt/ros/humble/share/rclpy/cmake)
+[0.110s] -- Found sensor_msgs: 4.9.0 (/opt/ros/humble/share/sensor_msgs/cmake)
+[0.212s] -- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.214s] -- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.218s] -- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.224s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.231s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.264s] -- Found gazebo_ros: 3.9.0 (/opt/ros/humble/share/gazebo_ros/cmake)
+[0.310s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[0.311s] -- Found rmw_fastrtps_cpp: 6.2.9 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[4.764s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[4.806s] -- Found DART: /usr/include (Required is at least version "6.6") found components: dart 
+[4.825s] -- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") 
+[4.827s] -- Looking for ignition-math6 -- found version 6.15.1
+[4.830s] -- Searching for dependencies of ignition-math6
+[4.831s] -- Looking for OGRE...
+[4.836s] -- Found Ogre Ghadamon (1.9.0)
+[4.836s] -- Found OGRE: optimized;/usr/lib/x86_64-linux-gnu/libOgreMain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreMain.so
+[4.848s] -- Looking for OGRE_Paging...
+[4.848s] -- Found OGRE_Paging: optimized;/usr/lib/x86_64-linux-gnu/libOgrePaging.so;debug;/usr/lib/x86_64-linux-gnu/libOgrePaging.so
+[4.849s] -- Looking for OGRE_Terrain...
+[4.849s] -- Found OGRE_Terrain: optimized;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so
+[4.849s] -- Looking for OGRE_Property...
+[4.849s] -- Found OGRE_Property: optimized;/usr/lib/x86_64-linux-gnu/libOgreProperty.so;debug;/usr/lib/x86_64-linux-gnu/libOgreProperty.so
+[4.849s] -- Looking for OGRE_RTShaderSystem...
+[4.849s] -- Found OGRE_RTShaderSystem: optimized;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so;debug;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so
+[4.849s] -- Looking for OGRE_Volume...
+[4.849s] -- Found OGRE_Volume: optimized;/usr/lib/x86_64-linux-gnu/libOgreVolume.so;debug;/usr/lib/x86_64-linux-gnu/libOgreVolume.so
+[4.849s] -- Looking for OGRE_Overlay...
+[4.849s] -- Found OGRE_Overlay: optimized;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so;debug;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so
+[21.056s] -- Looking for ignition-math6 -- found version 6.15.1
+[21.057s] -- Looking for ignition-transport8 -- found version 8.2.1
+[21.057s] -- Searching for dependencies of ignition-transport8
+[21.947s] -- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found suitable version "3.12.4", minimum required is "3") 
+[22.882s] -- Config-file not installed for ZeroMQ -- checking for pkg-config
+[22.886s] -- Checking for module 'libzmq >= 4'
+[22.894s] --   Found libzmq , version 4.3.4
+[22.922s] -- Checking for module 'uuid'
+[22.929s] --   Found uuid, version 2.37.2
+[22.949s] -- Looking for ignition-msgs5 -- found version 5.8.1
+[22.949s] -- Searching for dependencies of ignition-msgs5
+[24.103s] -- Looking for ignition-math6 -- found version 6.15.1
+[24.109s] -- Checking for module 'tinyxml2'
+[24.121s] --   Found tinyxml2, version 9.0.0
+[24.152s] -- Looking for ignition-msgs5 -- found version 5.8.1
+[24.152s] -- Looking for ignition-common3 -- found version 3.14.0
+[24.152s] -- Searching for dependencies of ignition-common3
+[24.152s] -- Looking for dlfcn.h - found
+[24.152s] -- Looking for libdl - found
+[24.262s] -- Searching for <ignition-common3> component [graphics]
+[24.263s] -- Looking for ignition-common3-graphics -- found version 3.14.0
+[24.263s] -- Searching for dependencies of ignition-common3-graphics
+[24.263s] -- Looking for ignition-math6 -- found version 6.15.1
+[24.264s] -- Looking for ignition-fuel_tools4 -- found version 4.4.0
+[24.264s] -- Searching for dependencies of ignition-fuel_tools4
+[25.751s] -- Checking for module 'jsoncpp'
+[25.760s] --   Found jsoncpp, version 1.9.5
+[25.788s] -- Checking for module 'libzip'
+[25.798s] --   Found libzip, version 1.7.3
+[25.823s] -- Looking for ignition-common3 -- found version 3.14.0
+[25.823s] -- Looking for ignition-math6 -- found version 6.15.1
+[25.823s] -- Looking for ignition-msgs5 -- found version 5.8.1
+[25.824s] -- Gazebo version: 11.10
+[25.826s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[25.865s] Error parsing '/home/stc/arm_ws/src/my_package/package.xml':
+[25.898s] Traceback (most recent call last):
+[25.898s]   File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 150, in <module>
+[25.898s]     main()
+[25.898s]   File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 53, in main
+[25.898s]     raise e
+[25.898s]   File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 49, in main
+[25.898s]     package = parse_package_string(
+[25.898s]   File "/usr/lib/python3/dist-packages/catkin_pkg/package.py", line 786, in parse_package_string
+[25.898s]     raise InvalidPackage('Error(s):%s' % (''.join(['\n- %s' % e for e in errors])), filename)
+[25.898s] catkin_pkg.package.InvalidPackage: Error(s) in package '/home/stc/arm_ws/src/my_package/package.xml':
+[25.898s] Error(s):
+[25.898s] - The generic dependency on 'xacro' is redundant with: exec_depend
+[25.911s] [31mCMake Error at /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:95 (message):
+[25.911s]   execute_process(/usr/bin/python3
+[25.911s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py
+[25.911s]   /home/stc/arm_ws/src/my_package/package.xml
+[25.911s]   /home/stc/arm_ws/build/my_package/ament_cmake_core/package.cmake) returned
+[25.911s]   error code 1
+[25.911s] Call Stack (most recent call first):
+[25.912s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:49 (_ament_package_xml)
+[25.912s]   /opt/ros/humble/share/ament_lint_auto/cmake/ament_lint_auto_find_test_dependencies.cmake:31 (ament_package_xml)
+[25.912s]   CMakeLists.txt:67 (ament_lint_auto_find_test_dependencies)
+[25.912s] 
+[25.912s] [0m
+[25.912s] -- Configuring incomplete, errors occurred!
+[25.912s] See also "/home/stc/arm_ws/build/my_package/CMakeFiles/CMakeOutput.log".
+[25.921s] gmake: *** [Makefile:267: cmake_check_build_system] Error 1
+[25.923s] Invoked command in '/home/stc/arm_ws/build/my_package' returned '2': /usr/bin/cmake --build /home/stc/arm_ws/build/my_package -- -j12 -l12
