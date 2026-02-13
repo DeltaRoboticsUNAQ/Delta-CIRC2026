@@ -1,0 +1,8 @@
+# Default initial positions for arm_v3's ros2_control fake system
+
+initial_positions:
+  bracket_joint: 0
+  endeffector_joint: 0
+  forearm_low_joint: 0
+  humerus_low_joint: 0
+  ubracket_joint: 0
