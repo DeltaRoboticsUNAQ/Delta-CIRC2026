@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>arm_tasks</name>
+  <version>1.0.0</version>
+  <description>Tasks CIRC 2026 para brazo arm_v3</description>
+  <maintainer email="said@circ.com">Said Torres Cervantes</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>trajectory_msgs</depend>
+  <depend>control_msgs</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
