@@ -1,4 +1,4 @@
-# MoveIt uses this configuration for controller management
+# src/arm_moveit_config/config/moveit_controllers.yaml
 
 moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
 
@@ -8,6 +8,9 @@ moveit_simple_controller_manager:
 
   arm_controller:
     type: FollowJointTrajectory
+    # ✅ ESTE ES EL FIX CRÍTICO — el action namespace del controller
+    action_ns: follow_joint_trajectory
+    default: true
     joints:
       - bracket_joint
       - humerus_low_joint
