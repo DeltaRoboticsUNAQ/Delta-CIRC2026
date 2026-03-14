@@ -14,11 +14,17 @@ joint_limits:
     max_velocity: 1.0
     has_acceleration_limits: true
     max_acceleration: 1.0
+    has_position_limits: true
+    min_position: -0.698   # -40 grados
+    max_position:  0.698   #  40 grados
   endeffector_joint:
     has_velocity_limits: true
     max_velocity: 1.0
     has_acceleration_limits: true
     max_acceleration: 1.0
+    has_position_limits: true
+    min_position: -3.1416  # -180 grados (360° completo)
+    max_position:  3.1416  #  180 grados
   forearm_low_joint:
     has_velocity_limits: true
     max_velocity: 1.0
@@ -34,3 +40,6 @@ joint_limits:
     max_velocity: 1.0
     has_acceleration_limits: true
     max_acceleration: 1.0
+    has_position_limits: true
+    min_position: -0.785   # -45 grados
+    max_position:  0.785   #  45 grados

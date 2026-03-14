@@ -119,6 +119,13 @@ def generate_launch_description():
         }],
     )
 
+    moveit_hw_bridge = Node(
+        package='my_package',
+        executable='moveit_hw_bridge.py',
+        name='moveit_hw_bridge',
+        output='screen',
+    )
+
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
@@ -140,5 +147,6 @@ def generate_launch_description():
         pot_max_arg,
         robot_state_publisher,
         stm32_bridge,
+        moveit_hw_bridge,
         rviz_node,
     ])

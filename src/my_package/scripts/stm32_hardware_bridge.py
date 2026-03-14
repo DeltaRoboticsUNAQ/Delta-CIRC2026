@@ -151,11 +151,11 @@ class Stm32HardwareBridge(Node):
 
         # ── Límites de joints del URDF ────────────────────────────────────────
         self.joint_limits = {
-            'bracket_joint':     (-1.5,  1.5),
-            'humerus_low_joint': (-1.5,  1.5),
-            'forearm_low_joint': (-1.5,  1.5),
-            'ubracket_joint':    (-0.8,  0.8),
-            'endeffector_joint': (-4.5,  4.5),
+            'bracket_joint':     (-0.698,  0.698),   # ±40°
+            'humerus_low_joint': (-1.5,    1.5),      # pendiente calibración pot
+            'forearm_low_joint': (-1.5,    1.5),      # pendiente calibración pot
+            'ubracket_joint':    (-0.785,  0.785),    # ±45°
+            'endeffector_joint': (-3.1416, 3.1416),   # ±180° (360° completo)
         }
 
         # ── Estado interno (protegido por lock) ───────────────────────────────

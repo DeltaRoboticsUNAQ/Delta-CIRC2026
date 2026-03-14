@@ -1,4 +1,5 @@
 /home/stc/arm_ws/install/my_package/lib/my_package/my_node
+/home/stc/arm_ws/install/my_package/share/my_package/launch/hardware.launch.py
 /home/stc/arm_ws/install/my_package/share/my_package/launch/rviz.launch.py
 /home/stc/arm_ws/install/my_package/share/my_package/launch/sim_gazebo.launch.py
 /home/stc/arm_ws/install/my_package/share/my_package/launch/sim_rviz.launch.py
@@ -18,6 +19,11 @@
 /home/stc/arm_ws/install/my_package/lib/my_package/keyboard_arduino.py
 /home/stc/arm_ws/install/my_package/lib/my_package/arm_keyboard_teleop.py
 /home/stc/arm_ws/install/my_package/lib/my_package/arm_hw_teleop_bridge.py
+/home/stc/arm_ws/install/my_package/lib/my_package/arm_hardware_bridge.py
+/home/stc/arm_ws/install/my_package/lib/my_package/stm32_hardware_bridge.py
+/home/stc/arm_ws/install/my_package/lib/my_package/fake_stm32.py
+/home/stc/arm_ws/install/my_package/lib/my_package/moveit_hw_bridge.py
+/home/stc/arm_ws/install/my_package/share/my_package/firmware/stm32_arm_firmware.md
 /home/stc/arm_ws/install/my_package/share/ament_index/resource_index/package_run_dependencies/my_package
 /home/stc/arm_ws/install/my_package/share/ament_index/resource_index/parent_prefix_path/my_package
 /home/stc/arm_ws/install/my_package/share/my_package/environment/ament_prefix_path.sh

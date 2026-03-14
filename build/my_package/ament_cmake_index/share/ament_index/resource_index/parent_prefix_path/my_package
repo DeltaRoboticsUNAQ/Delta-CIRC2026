@@ -1,1 +1,1 @@
-/home/stc/arm_ws/install/rover_sensors:/home/stc/arm_ws/install/rover_navigation:/home/stc/arm_ws/install/rover_interfaces:/home/stc/arm_ws/install/rover_bringup:/home/stc/arm_ws/install/rover_description:/home/stc/arm_ws/install/rover_chassis_hw:/home/stc/arm_ws/install/rover_chassis_control:/home/stc/arm_ws/install/arm_moveit_config:/home/stc/arm_ws/install/rover_arm_hw:/home/stc/arm_ws/install/moveit:/home/stc/arm_ws/install/my_package:/opt/ros/humble
+/opt/ros/humble

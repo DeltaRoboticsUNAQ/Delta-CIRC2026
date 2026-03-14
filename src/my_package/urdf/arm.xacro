@@ -66,7 +66,7 @@
     <parent link="base_link" />
     <child link="bracket_link" />
     <axis xyz="0 0 1" />
-    <limit lower="-1.5" upper="1.5" effort="10" velocity="1" />
+    <limit lower="-0.698" upper="0.698" effort="10" velocity="1" />
     <dynamics damping="0.05" friction="0.1" />
   </joint>
 
@@ -183,7 +183,7 @@
     <parent link="forearm_link" />
     <child link="ubracket_link" />
     <axis xyz="0 1 0" />
-    <limit lower="-0.8" upper="0.8" effort="10" velocity="1" />
+    <limit lower="-0.785" upper="0.785" effort="10" velocity="1" />
     <dynamics damping="0.05" friction="0.1" />
   </joint>
 
@@ -222,7 +222,7 @@
     <parent link="ubracket_link" />
     <child link="endeffector_link" />
     <axis xyz="0.99568 0 0.092843" />
-    <limit lower="-4.5" upper="4.5" effort="10" velocity="1" />
+    <limit lower="-3.1416" upper="3.1416" effort="10" velocity="1" />
     <dynamics damping="0.05" friction="0.1" />
   </joint>
 
