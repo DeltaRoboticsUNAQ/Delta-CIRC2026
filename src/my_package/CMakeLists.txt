@@ -47,13 +47,16 @@ install(DIRECTORY config/
 # Install scripts
 install(PROGRAMS
   scripts/keyboard_arduino.py
+  scripts/arm_keyboard_teleop.py
+  scripts/arm_hw_teleop_bridge.py
+  scripts/arm_hardware_bridge.py
+  scripts/stm32_hardware_bridge.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(PROGRAMS
-  scripts/arm_keyboard_teleop.py
-  scripts/arm_hw_teleop_bridge.py
-  DESTINATION lib/${PROJECT_NAME}
+# Install firmware documentation
+install(DIRECTORY firmware/
+  DESTINATION share/${PROJECT_NAME}/firmware
 )
 
 
