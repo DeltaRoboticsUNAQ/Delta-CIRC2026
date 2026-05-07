@@ -31,21 +31,21 @@ Este repositorio está altamente modularizado. El código se divide no solo lóg
 Este repositorio emplea un esquema multi-branch enfocado a sistemas robóticos complejos:
 
 * **main**: Rama de integración final. Contiene código funcional y probado para simulaciones y hardware real. Toda actualización requiere un Pull Request (PR) y Code Review.
-* **rm**: Rama orientada al desarrollo exclusivo de la física, cinemática inversa, MoveIt, sensórica y el firmware local del brazo robótico.
-* **chassis**: Rama para el desarrollo del ecosistema de navegación autónoma, control de tracción, SLAM, y percepcion visual de la base motriz.
+* **arm**: Rama orientada al desarrollo exclusivo de la física, cinemática inversa, MoveIt, sensórica y el firmware local del brazo robótico.
+* **chassis**: Rama para el desarrollo del ecosistema de navegación, simulacion del chasis.
 * **stm32**: Rama de desarrollo dedicada únicamente a los firmwares, periféricos (I2C, SPI, CAN, UART) e integración con micro-ROS.
 
 ## 🚀 Guía de Inicio Rápido (Quick Start)
 
 ### 1. Clonar el repositorio
-""ash
+""bash
 git clone https://github.com/Organization/Delta-CIRC2026.git
 cd Delta-CIRC2026
 ""
 
 ### 2. Seleccionar el módulo a trabajar
 Dependiendo del equipo donde aportes, cambia de branch:
-""ash
+""bash
 git checkout arm      # Para desarrollo de manipulador
 git checkout chassis  # Para desarrollo de la base/navegación
 git checkout stm32    # Para desarrollo embebido
