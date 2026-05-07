@@ -1,6 +1,6 @@
 ﻿# 🚙 Módulo Chassis (Base Motriz y Navegación)
 
-Esta rama está dedicada exclusivamente al desarrollo del ecosistema de la base motriz, la navegación autónoma y el control de tracción para el rover del CIRC 2026.
+Esta rama está dedicada exclusivamente al desarrollo del ecosistema de la base motriz, la navegación semiautónoma y el control de velocidad para el rover del CIRC 2026.
 
 ## 📋 Plan de Actividades y Roadmap
 
