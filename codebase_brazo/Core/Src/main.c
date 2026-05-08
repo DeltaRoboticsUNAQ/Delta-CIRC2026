@@ -48,7 +48,6 @@
 // Timeout de seguridad para RoboClaw (7 segundos)
 #define TIMEOUT_MS 7000
 
-#define RX_BUFFER_SIZE 128
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -59,8 +58,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-char rx_buffer[RX_BUFFER_SIZE];
-uint8_t rx_index = 0;
 
 // Variables para actuadores lineales (ADC/PWM)
 uint16_t adc_val[2];      // Buffer ADC (DMA)
@@ -85,7 +82,6 @@ bool motorsRunning = false;
 
 // Scheduler por timers
 volatile uint8_t flag_control = 0;
-volatile uint8_t flag_print = 0;
 
 /* USER CODE END PV */
 
@@ -96,11 +92,6 @@ void SystemClock_Config(void);
 int uart2_write(int ch);
 int __io_putchar(int ch);
 int _read(int file, char *ptr, int len);
-//funcion UART Ros
-void parseROSCommand(char *cmd);
-//feedback to ros
-void sendROSFeedback(void);
-
 // Funciones actuadores lineales
 void forwardAct(int actuator, int duty);
 void backwardAct(int actuator, int duty);
@@ -161,7 +152,6 @@ int main(void)
 
   // Iniciar timers scheduler
   HAL_TIM_Base_Start_IT(&htim4);   // control loop
-  HAL_TIM_Base_Start_IT(&htim2);   // impresión debug
 
   // Inicializacion RoboClaw
   RoboClaw_Init(&rcBase, &huart1, 100);
@@ -241,31 +231,12 @@ int main(void)
               }
           }
 
-          //Revisar comandos UART ROS
+          // Revisar comandos UART (sin bloquear)
           uint8_t ch;
 
-          if(HAL_UART_Receive(&huart2, &ch, 1, 0) == HAL_OK)
+          if(HAL_UART_Receive(&huart2, &ch, 1, 10) == HAL_OK)
           {
-        	  if(ch == '\n')
-        	  {
-        	      if(rx_index > 0)
-        	      {
-        	          rx_buffer[rx_index] = 0;
-        	          parseROSCommand(rx_buffer);
-        	          rx_index = 0;
-        	      }
-        	  }
-        	  else if(ch != '\r')
-        	  {
-        	      if(rx_index < RX_BUFFER_SIZE-1)
-        	      {
-        	          rx_buffer[rx_index++] = ch;
-        	      }
-        	      else
-        	      {
-        	          rx_index = 0;
-        	      }
-        	  }
+              processCommand(ch);
           }
 
           //Timeout RoboClaw
@@ -275,14 +246,6 @@ int main(void)
               motorsRunning = false;
               printf(">> AUTO-STOP RoboClaw (timeout 7s)\r\n");
           }
-      }
-
-      //  Impresion debug
-      if(flag_print==1)
-      {
-          flag_print = 0;
-
-          sendROSFeedback();
       }
 
   }
@@ -460,14 +423,14 @@ void processCommand(uint8_t ch)
     // MUÑECA - Subir/Bajar
     else if (key == 'W' || key == 'w')
     {
-    	RoboClaw_ForwardBackwardMixed(&rcWrist, RC_ADDR_WRIST, 30);
+    	RoboClaw_ForwardBackwardMixed(&rcWrist, RC_ADDR_WRIST, 94);
         lastCommandTime = HAL_GetTick();
         motorsRunning = true;
         printf(">> Muneca SUBIR\r\n");
     }
     else if (key == 'S' || key == 's')
     {
-    	RoboClaw_ForwardBackwardMixed(&rcWrist, RC_ADDR_WRIST, -30);
+    	RoboClaw_ForwardBackwardMixed(&rcWrist, RC_ADDR_WRIST, 34);
         lastCommandTime = HAL_GetTick();
         motorsRunning = true;
         printf(">> Muneca BAJAR\r\n");
@@ -476,14 +439,14 @@ void processCommand(uint8_t ch)
     // MUÑECA - Rotar
     else if (key == 'Q' || key == 'q')
     {
-    	RoboClaw_LeftRightMixed(&rcWrist, RC_ADDR_WRIST, -30);
+    	RoboClaw_LeftRightMixed(&rcWrist, RC_ADDR_WRIST, 94);
         lastCommandTime = HAL_GetTick();
         motorsRunning = true;
         printf(">> Muneca ROT IZQ\r\n");
     }
     else if (key == 'E' || key == 'e')
     {
-    	RoboClaw_LeftRightMixed(&rcWrist, RC_ADDR_WRIST, 30);
+    	RoboClaw_LeftRightMixed(&rcWrist, RC_ADDR_WRIST, 34);
         lastCommandTime = HAL_GetTick();
         motorsRunning = true;
         printf(">> Muneca ROT DER\r\n");
@@ -497,74 +460,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		flag_control = 1;
 	}
-
-	else if(htim->Instance == TIM2)
-	{
-		flag_print = 1;
-	}
 }
 
-void parseROSCommand(char *cmd)
-{
-
-	if(strncmp(cmd,"CMD:",4)!=0)
-		return;
-    float base = 0;
-    float w1 = 0;
-    float w2 = 0;
-    float a1 = 0;
-    float a2 = 0;
-
-    int parsed = sscanf(cmd,
-        "CMD:B:%f;W1:%f;W2:%f;A1:%f;A2:%f",
-        &base, &w1, &w2, &a1, &a2);
-
-    if(parsed == 5)
-    {
-    	 HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); // LED blink
-        // BASE
-        if(base > 0)
-            RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, base);
-        else
-            RoboClaw_BackwardM1(&rcBase, RC_ADDR_BASE, base);
-
-        // WRIST M1
-        if(w1 > 0)
-            RoboClaw_ForwardM1(&rcWrist, RC_ADDR_WRIST, w1);
-        else
-            RoboClaw_BackwardM1(&rcWrist, RC_ADDR_WRIST, w1);
-
-        // WRIST M2
-        if(w2 > 0)
-            RoboClaw_ForwardM2(&rcWrist, RC_ADDR_WRIST, w2);
-        else
-            RoboClaw_BackwardM2(&rcWrist, RC_ADDR_WRIST, w2);
-
-        // ACTUADORES
-        pos1 = a1;
-        pos2 = a2;
-
-        lastCommandTime = HAL_GetTick();
-        motorsRunning = true;
-    }
-}
-
-void sendROSFeedback(void)
-{
-    int baseTicks = 0;
-    int w1Ticks = 0;
-    int w2Ticks = 0;
-
-    int pot1 = adc_val[0];
-    int pot2 = adc_val[1];
-
-    printf("FB:BE:%d;W1:%d;W2:%d;P1:%d;P2:%d\n",
-            baseTicks,
-            w1Ticks,
-            w2Ticks,
-            pot1,
-            pot2);
-}
 /* USER CODE END 4 */
 
 /**
