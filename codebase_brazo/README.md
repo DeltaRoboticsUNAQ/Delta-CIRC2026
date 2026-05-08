@@ -43,12 +43,15 @@ Los actuadores lineales son controlados mediante:
 
 Cada actuador utiliza control proporcional simple:
 
-
+```math
 duty = kp * error
+```
 
 donde:
 
+```math
 error = posicion_objetivo - posicion_actual
+```
 
 La posición actual se obtiene mediante ADC de 12 bits y se convierte a porcentaje.
 
@@ -59,9 +62,9 @@ La posición actual se obtiene mediante ADC de 12 bits y se convierte a porcenta
 El sistema utiliza dos RoboClaw:
 
 | RoboClaw | Dirección | Función |
-|---       |---        |---      |
-| Base     | 0x81      | Rotación base |
-| Wrist    | 0x80      | Differential wrist |
+|---|---|---|
+| Base | 0x81 | Rotación base |
+| Wrist | 0x80 | Differential wrist |
 
 ---
 
