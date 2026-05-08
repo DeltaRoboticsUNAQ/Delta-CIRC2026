@@ -1,0 +1,14 @@
+../Core/Src/main.c:123:5:main	24	static
+../Core/Src/main.c:295:6:SystemClock_Config	88	static
+../Core/Src/main.c:339:5:uart2_write	16	static
+../Core/Src/main.c:345:5:__io_putchar	16	static
+../Core/Src/main.c:350:5:_read	32	static
+../Core/Src/main.c:366:6:forwardAct	16	static
+../Core/Src/main.c:379:6:backwardAct	16	static
+../Core/Src/main.c:392:6:actStop	8	static
+../Core/Src/main.c:402:6:stopAllRoboClaw	8	static
+../Core/Src/main.c:410:6:processCommand	24	static
+../Core/Src/main.c:494:6:HAL_TIM_PeriodElapsedCallback	16	static
+../Core/Src/main.c:507:6:parseROSCommand	56	static
+../Core/Src/main.c:552:6:sendROSFeedback	40	static
+../Core/Src/main.c:574:6:Error_Handler	4	static,ignoring_inline_asm
