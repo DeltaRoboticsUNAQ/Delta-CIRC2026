@@ -23,6 +23,7 @@
 /home/stc/arm_ws/install/my_package/lib/my_package/stm32_hardware_bridge.py
 /home/stc/arm_ws/install/my_package/lib/my_package/fake_stm32.py
 /home/stc/arm_ws/install/my_package/lib/my_package/moveit_hw_bridge.py
+/home/stc/arm_ws/install/my_package/share/my_package/firmware/main.c
 /home/stc/arm_ws/install/my_package/share/my_package/firmware/stm32_arm_firmware.md
 /home/stc/arm_ws/install/my_package/share/ament_index/resource_index/package_run_dependencies/my_package
 /home/stc/arm_ws/install/my_package/share/ament_index/resource_index/parent_prefix_path/my_package
