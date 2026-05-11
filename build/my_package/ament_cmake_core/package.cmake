@@ -5,7 +5,7 @@ set(my_package_BUILD_DEPENDS "robot_state_publisher" "joint_state_publisher_gui"
 set(my_package_BUILDTOOL_DEPENDS "ament_cmake")
 set(my_package_BUILD_EXPORT_DEPENDS "robot_state_publisher" "joint_state_publisher_gui" "rviz2" "xacro")
 set(my_package_BUILDTOOL_EXPORT_DEPENDS )
-set(my_package_EXEC_DEPENDS "python3-serial" "robot_state_publisher" "joint_state_publisher_gui" "rviz2" "xacro")
+set(my_package_EXEC_DEPENDS "ament_index_python" "launch" "launch_ros" "gazebo_ros" "rclpy" "std_msgs" "gazebo_msgs" "python3-serial" "robot_state_publisher" "joint_state_publisher_gui" "rviz2" "xacro")
 set(my_package_TEST_DEPENDS "ament_lint_auto" "ament_lint_common")
 set(my_package_GROUP_DEPENDS )
 set(my_package_MEMBER_OF_GROUPS )

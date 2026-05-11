@@ -325,8 +325,11 @@ ament_cmake_symlink_install_directory("/home/stc/arm_ws/src/my_package" DIRECTOR
 # install(DIRECTORY "config/" "DESTINATION" "share/my_package/config")
 ament_cmake_symlink_install_directory("/home/stc/arm_ws/src/my_package" DIRECTORY "config/" "DESTINATION" "share/my_package/config")
 
-# install(PROGRAMS "scripts/keyboard_arduino.py" "scripts/arm_keyboard_teleop.py" "scripts/arm_hw_teleop_bridge.py" "scripts/arm_hardware_bridge.py" "scripts/stm32_hardware_bridge.py" "scripts/fake_stm32.py" "scripts/moveit_hw_bridge.py" "DESTINATION" "lib/my_package")
-ament_cmake_symlink_install_programs("/home/stc/arm_ws/src/my_package" PROGRAMS "scripts/keyboard_arduino.py" "scripts/arm_keyboard_teleop.py" "scripts/arm_hw_teleop_bridge.py" "scripts/arm_hardware_bridge.py" "scripts/stm32_hardware_bridge.py" "scripts/fake_stm32.py" "scripts/moveit_hw_bridge.py" "DESTINATION" "lib/my_package")
+# install(DIRECTORY "worlds/" "DESTINATION" "share/my_package/worlds")
+ament_cmake_symlink_install_directory("/home/stc/arm_ws/src/my_package" DIRECTORY "worlds/" "DESTINATION" "share/my_package/worlds")
+
+# install(PROGRAMS "scripts/keyboard_arduino.py" "scripts/arm_keyboard_teleop.py" "scripts/arm_hw_teleop_bridge.py" "scripts/arm_hardware_bridge.py" "scripts/stm32_hardware_bridge.py" "scripts/fake_stm32.py" "scripts/moveit_hw_bridge.py" "scripts/robot_description_publisher.py" "scripts/gazebo_set_initial_joint_positions.py" "DESTINATION" "lib/my_package")
+ament_cmake_symlink_install_programs("/home/stc/arm_ws/src/my_package" PROGRAMS "scripts/keyboard_arduino.py" "scripts/arm_keyboard_teleop.py" "scripts/arm_hw_teleop_bridge.py" "scripts/arm_hardware_bridge.py" "scripts/stm32_hardware_bridge.py" "scripts/fake_stm32.py" "scripts/moveit_hw_bridge.py" "scripts/robot_description_publisher.py" "scripts/gazebo_set_initial_joint_positions.py" "DESTINATION" "lib/my_package")
 
 # install(DIRECTORY "firmware/" "DESTINATION" "share/my_package/firmware")
 ament_cmake_symlink_install_directory("/home/stc/arm_ws/src/my_package" DIRECTORY "firmware/" "DESTINATION" "share/my_package/firmware")

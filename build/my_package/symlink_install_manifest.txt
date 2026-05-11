@@ -16,6 +16,7 @@
 /home/stc/arm_ws/install/my_package/share/my_package/meshes/shaft_forearm_link.STL
 /home/stc/arm_ws/install/my_package/share/my_package/meshes/shaft_humerus_link.STL
 /home/stc/arm_ws/install/my_package/share/my_package/meshes/ubracket_link.STL
+/home/stc/arm_ws/install/my_package/share/my_package/worlds/empty.world
 /home/stc/arm_ws/install/my_package/lib/my_package/keyboard_arduino.py
 /home/stc/arm_ws/install/my_package/lib/my_package/arm_keyboard_teleop.py
 /home/stc/arm_ws/install/my_package/lib/my_package/arm_hw_teleop_bridge.py
@@ -23,6 +24,8 @@
 /home/stc/arm_ws/install/my_package/lib/my_package/stm32_hardware_bridge.py
 /home/stc/arm_ws/install/my_package/lib/my_package/fake_stm32.py
 /home/stc/arm_ws/install/my_package/lib/my_package/moveit_hw_bridge.py
+/home/stc/arm_ws/install/my_package/lib/my_package/robot_description_publisher.py
+/home/stc/arm_ws/install/my_package/lib/my_package/gazebo_set_initial_joint_positions.py
 /home/stc/arm_ws/install/my_package/share/my_package/firmware/main.c
 /home/stc/arm_ws/install/my_package/share/my_package/firmware/stm32_arm_firmware.md
 /home/stc/arm_ws/install/my_package/share/ament_index/resource_index/package_run_dependencies/my_package

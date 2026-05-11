@@ -1,1 +1,1 @@
-robot_state_publisher;joint_state_publisher_gui;rviz2;xacro;python3-serial;ament_lint_auto;ament_lint_common
+robot_state_publisher;joint_state_publisher_gui;rviz2;xacro;ament_index_python;launch;launch_ros;gazebo_ros;rclpy;std_msgs;gazebo_msgs;python3-serial;ament_lint_auto;ament_lint_common

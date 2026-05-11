@@ -44,6 +44,11 @@ install(DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}/config
 )
 
+# Install Gazebo worlds
+install(DIRECTORY worlds/
+  DESTINATION share/${PROJECT_NAME}/worlds
+)
+
 # Install scripts
 install(PROGRAMS
   scripts/keyboard_arduino.py
@@ -53,6 +58,8 @@ install(PROGRAMS
   scripts/stm32_hardware_bridge.py
   scripts/fake_stm32.py
   scripts/moveit_hw_bridge.py
+  scripts/robot_description_publisher.py
+  scripts/gazebo_set_initial_joint_positions.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

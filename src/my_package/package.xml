@@ -9,6 +9,14 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>gazebo_msgs</exec_depend>
+
   <depend>robot_state_publisher</depend>
   <depend>joint_state_publisher_gui</depend>
   <depend>rviz2</depend>

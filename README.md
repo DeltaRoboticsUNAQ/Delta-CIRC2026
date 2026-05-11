@@ -230,6 +230,28 @@ arm_ws/
 
 ## 🐛 Solución de Problemas
 
+## 🧪 Simulación en Gazebo (brazo)
+
+```bash
+# 1) Compilar
+cd ~/arm_ws
+colcon build --symlink-install --packages-select my_package
+
+# 2) Sourcear
+source install/setup.bash
+
+# 3) Lanzar Gazebo + spawn del brazo
+ros2 launch my_package sim_gazebo.launch.py
+
+# Ejemplo: arrancar con una pose inicial (para que se vea “doblado” como en RViz)
+# Nota: ajusta los valores (radianes) a tu gusto
+# ros2 launch my_package sim_gazebo.launch.py \
+#   humerus_low_joint_pos:=0.9 forearm_low_joint_pos:=0.9 ubracket_joint_pos:=0.3
+
+# Opcional: sin GUI
+# ros2 launch my_package sim_gazebo.launch.py gui:=false
+```
+
 ### Error: "No se pudo abrir el puerto serie"
 - Verificar que el STM32 está conectado: `ls /dev/ttyACM* /dev/ttyUSB*`
 - Verificar permisos: `groups` (debe incluir `dialout`)
