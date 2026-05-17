@@ -1,0 +1,6 @@
+build:
+  # Use a merged install space so ROS package discovery works reliably
+  # (similar to /opt/ros/<distro> layouts). This avoids per-package AMENT_PREFIX_PATH
+  # issues in isolated installs.
+  merge-install: true
+  symlink-install: true

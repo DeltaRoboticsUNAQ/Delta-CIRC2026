@@ -1,0 +1,1381 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="rover_simple_v1_2">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.065394 3.6917E-17 -0.0291"
+        rpy="0 0 0" />
+      <mass
+        value="15.823" />
+      <inertia
+        ixx="0.3231"
+        ixy="-1.631E-16"
+        ixz="0.036909"
+        iyy="0.83124"
+        iyz="1.728E-17"
+        izz="1.1312" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="RL2up_link">
+    <inertial>
+      <origin
+        xyz="0.00098326 -0.048163 0.06572"
+        rpy="0 0 0" />
+      <mass
+        value="0.35165" />
+      <inertia
+        ixx="0.00058844"
+        ixy="4.4854E-07"
+        ixz="8.4163E-05"
+        iyy="0.0067323"
+        iyz="2.998E-05"
+        izz="0.0062126" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL2up_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL2up_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RL2up_joint"
+    type="revolute">
+    <origin
+      xyz="0.20894 -0.20857 -0.0127"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="RL2up_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="RL5Fup_link">
+    <inertial>
+      <origin
+        xyz="0.0076906 0.012145 -0.14103"
+        rpy="0 0 0" />
+      <mass
+        value="0.29333" />
+      <inertia
+        ixx="0.0028904"
+        ixy="-1.2514E-06"
+        ixz="-0.00017855"
+        iyy="0.0029492"
+        iyz="-2.79E-05"
+        izz="0.00010048" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL5Fup_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL5Fup_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RL5Fup_joint"
+    type="revolute">
+    <origin
+      xyz="0.21835 -0.0858 0.12175"
+      rpy="0 0 0" />
+    <parent
+      link="RL2up_link" />
+    <child
+      link="RL5Fup_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="FR_link">
+    <inertial>
+      <origin
+        xyz="0.00015846 0.04999 0.00043787"
+        rpy="0 0 0" />
+      <mass
+        value="3.1305" />
+      <inertia
+        ixx="0.010449"
+        ixy="-2.4542E-06"
+        ixz="2.8348E-06"
+        iyy="0.015699"
+        iyz="-6.782E-06"
+        izz="0.010455" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/FR_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69412 0.098039 0.098039 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/FR_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="FR_joint"
+    type="continuous">
+    <origin
+      xyz="-0.000176 -0.1 -0.31299"
+      rpy="0 0 0" />
+    <parent
+      link="RL5Fup_link" />
+    <child
+      link="FR_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      friction="0.1" />
+  </joint>
+  <link
+    name="RL5Mup_link">
+    <inertial>
+      <origin
+        xyz="-0.00769063863242325 0.0121452936339811 -0.14103025565529"
+        rpy="0 0 0" />
+      <mass
+        value="0.293330883283669" />
+      <inertia
+        ixx="0.00289043444987535"
+        ixy="1.25138283176357E-06"
+        ixz="0.000178547994079131"
+        iyy="0.00294920584403958"
+        iyz="-2.79002722011482E-05"
+        izz="0.000100480286474077" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL5Mup_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL5Mup_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RL5Mup_joint"
+    type="revolute">
+    <origin
+      xyz="-0.21461 -0.0858 0.12822"
+      rpy="0 0 0" />
+    <parent
+      link="RL2up_link" />
+    <child
+      link="RL5Mup_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+    <mimic
+      joint="RL2up_joint"
+      multiplier="1"
+      offset="0" />
+  </joint>
+  <link
+    name="MR_link">
+    <inertial>
+      <origin
+        xyz="-4.4033E-05 0.04999 0.00046357"
+        rpy="0 0 0" />
+      <mass
+        value="3.1305" />
+      <inertia
+        ixx="0.010448"
+        ixy="6.82E-07"
+        ixz="-6.7415E-07"
+        iyy="0.015699"
+        iyz="-7.1801E-06"
+        izz="0.010456" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/MR_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69412 0.098039 0.098039 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/MR_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="MR_joint"
+    type="continuous">
+    <origin
+      xyz="4.8996E-05 -0.1 -0.31301"
+      rpy="0 0 0" />
+    <parent
+      link="RL5Mup_link" />
+    <child
+      link="MR_link" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      friction="0.1" />
+  </joint>
+  <link
+    name="RL2F_link">
+    <inertial>
+      <origin
+        xyz="0.10918 -0.0477 0.060874"
+        rpy="0 0 0" />
+      <mass
+        value="0.18497" />
+      <inertia
+        ixx="0.00031847"
+        ixy="3.5529E-05"
+        ixz="-0.00051774"
+        iyy="0.0012362"
+        iyz="1.981E-05"
+        izz="0.00095834" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL2F_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL2F_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RL2F_joint"
+    type="revolute">
+    <origin
+      xyz="0.25269 -0.20857 -0.088477"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="RL2F_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="RL2M_link">
+    <inertial>
+      <origin
+        xyz="-0.10731 -0.0477 0.064112"
+        rpy="0 0 0" />
+      <mass
+        value="0.18497" />
+      <inertia
+        ixx="0.00035"
+        ixy="-3.492E-05"
+        ixz="0.00053594"
+        iyy="0.0012362"
+        iyz="2.0864E-05"
+        izz="0.00092681" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL2M_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL2M_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RL2M_joint"
+    type="revolute">
+    <origin
+      xyz="0.16519 -0.20857 -0.088477"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="RL2M_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="LL2up_link">
+    <inertial>
+      <origin
+        xyz="0.00091645 0.048163 0.065721"
+        rpy="0 0 0" />
+      <mass
+        value="0.35165" />
+      <inertia
+        ixx="0.00058828"
+        ixy="-4.1806E-07"
+        ixz="7.8446E-05"
+        iyy="0.0067323"
+        iyz="-2.9981E-05"
+        izz="0.0062127" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL2up_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL2up_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LL2up_joint"
+    type="revolute">
+    <origin
+      xyz="0.20894 0.20857 -0.0127"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="LL2up_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="LL5Fup_link">
+    <inertial>
+      <origin
+        xyz="0.0076906 -0.012145 -0.14103"
+        rpy="0 0 0" />
+      <mass
+        value="0.29333" />
+      <inertia
+        ixx="0.0028904"
+        ixy="1.2514E-06"
+        ixz="-0.00017855"
+        iyy="0.0029492"
+        iyz="2.79E-05"
+        izz="0.00010048" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL5Fup_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL5Fup_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LL5Fup_joint"
+    type="revolute">
+    <origin
+      xyz="0.21823 0.0858 0.12197"
+      rpy="0 0 0" />
+    <parent
+      link="LL2up_link" />
+    <child
+      link="LL5Fup_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="FL_link">
+    <inertial>
+      <origin
+        xyz="-9.96747688486455E-05 -0.0499897597004844 0.000454868422873678"
+        rpy="0 0 0" />
+      <mass
+        value="3.13052407011922" />
+      <inertia
+        ixx="0.0104483266514516"
+        ixy="-1.54381562067166E-06"
+        ixz="-1.90614159922228E-06"
+        iyy="0.0156991895878841"
+        iyz="7.04524309102212E-06"
+        izz="0.0104559749633527" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/FL_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.694117647058824 0.0980392156862745 0.0980392156862745 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/FL_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="FL_joint"
+    type="continuous">
+    <origin
+      xyz="0.00011051 0.1 -0.313"
+      rpy="0 0 0" />
+    <parent
+      link="LL5Fup_link" />
+    <child
+      link="FL_link" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      friction="0.1" />
+  </joint>
+  <link
+    name="LL5Mup_link">
+    <inertial>
+      <origin
+        xyz="-0.00769063860003295 -0.012145293633981 -0.141030255657078"
+        rpy="0 0 0" />
+      <mass
+        value="0.293330883283669" />
+      <inertia
+        ixx="0.00289043444979333"
+        ixy="-1.25138283817265E-06"
+        ixz="0.000178547994719998"
+        iyy="0.00294920584403959"
+        iyz="2.79002722008615E-05"
+        izz="0.000100480286556104" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL5Mup_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL5Mup_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LL5Mup_joint"
+    type="revolute">
+    <origin
+      xyz="-0.21474 0.0858 0.12801"
+      rpy="0 0 0" />
+    <parent
+      link="LL2up_link" />
+    <child
+      link="LL5Mup_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="ML_link">
+    <inertial>
+      <origin
+        xyz="2.21417883058198E-05 -0.0499897597004856 0.000465134478291995"
+        rpy="0 0 0" />
+      <mass
+        value="3.13052407011922" />
+      <inertia
+        ixx="0.0104478867163192"
+        ixy="3.42943746383718E-07"
+        ixz="2.73992274820629E-07"
+        iyy="0.0156991895878841"
+        iyz="7.20424919537306E-06"
+        izz="0.0104564148984851" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/ML_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.694117647058824 0.0980392156862745 0.0980392156862745 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/ML_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ML_joint"
+    type="continuous">
+    <origin
+      xyz="-2.4455E-05 0.1 -0.31302"
+      rpy="0 0 0" />
+    <parent
+      link="LL5Mup_link" />
+    <child
+      link="ML_link" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      friction="0.1" />
+  </joint>
+  <link
+    name="LL2F_link">
+    <inertial>
+      <origin
+        xyz="0.10911 0.0477 0.060985"
+        rpy="0 0 0" />
+      <mass
+        value="0.18497" />
+      <inertia
+        ixx="0.00031952"
+        ixy="-3.5508E-05"
+        ixz="-0.00051839"
+        iyy="0.0012362"
+        iyz="-1.9846E-05"
+        izz="0.00095729" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL2F_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL2F_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LL2F_joint"
+    type="revolute">
+    <origin
+      xyz="0.25269 0.20857 -0.088477"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="LL2F_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="LL2M_link">
+    <inertial>
+      <origin
+        xyz="-0.10737 0.0477 0.064003"
+        rpy="0 0 0" />
+      <mass
+        value="0.18497" />
+      <inertia
+        ixx="0.00034891"
+        ixy="3.4941E-05"
+        ixz="0.00053536"
+        iyy="0.0012362"
+        iyz="-2.0828E-05"
+        izz="0.0009279" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL2M_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL2M_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LL2M_joint"
+    type="revolute">
+    <origin
+      xyz="0.16519 0.20857 -0.088477"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="LL2M_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="L4up_link">
+    <inertial>
+      <origin
+        xyz="-0.048111 8.9005E-16 -1.2212E-15"
+        rpy="0 0 0" />
+      <mass
+        value="0.39599" />
+      <inertia
+        ixx="0.011847"
+        ixy="-5.3963E-19"
+        ixz="3.2261E-21"
+        iyy="5.8401E-05"
+        iyz="0.00011062"
+        izz="0.011862" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/L4up_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/L4up_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L4up_joint"
+    type="revolute">
+    <origin
+      xyz="-0.39288 0 0.0273"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="L4up_link" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="LL6up_link">
+    <inertial>
+      <origin
+        xyz="0.0223 0.0010197 -0.12174"
+        rpy="0 0 0" />
+      <mass
+        value="0.15957" />
+      <inertia
+        ixx="0.00087985"
+        ixy="1.2554E-21"
+        ixz="9.5067E-20"
+        iyy="0.00087426"
+        iyz="1.7209E-05"
+        izz="2.2299E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL6up_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/LL6up_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LL6up_joint"
+    type="revolute">
+    <origin
+      xyz="-0.0954 0.28166 -0.0026393"
+      rpy="0 0 0" />
+    <parent
+      link="L4up_link" />
+    <child
+      link="LL6up_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="BL_link">
+    <inertial>
+      <origin
+        xyz="0.000233 -0.04999 0.00040318"
+        rpy="0 0 0" />
+      <mass
+        value="3.1305" />
+      <inertia
+        ixx="0.01045"
+        ixy="3.6088E-06"
+        ixz="3.6343E-06"
+        iyy="0.015699"
+        iyz="6.2446E-06"
+        izz="0.010454" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/BL_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69412 0.098039 0.098039 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/BL_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="BL_joint"
+    type="continuous">
+    <origin
+      xyz="0.022041 0.1127 -0.22795"
+      rpy="0 0 0" />
+    <parent
+      link="LL6up_link" />
+    <child
+      link="BL_link" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      friction="0.1" />
+  </joint>
+  <link
+    name="RL6up_link">
+    <inertial>
+      <origin
+        xyz="0.0223 -0.0010197 -0.12174"
+        rpy="0 0 0" />
+      <mass
+        value="0.15957" />
+      <inertia
+        ixx="0.00087985"
+        ixy="3.3236E-21"
+        ixz="-3.8248E-21"
+        iyy="0.00087426"
+        iyz="-1.7209E-05"
+        izz="2.2299E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL6up_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/RL6up_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RL6up_joint"
+    type="revolute">
+    <origin
+      xyz="-0.0954 -0.28166 0.0026393"
+      rpy="0 0 0" />
+    <parent
+      link="L4up_link" />
+    <child
+      link="RL6up_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  <link
+    name="BR_link">
+    <inertial>
+      <origin
+        xyz="0.00027132 0.04999 0.00037845"
+        rpy="0 0 0" />
+      <mass
+        value="3.1305" />
+      <inertia
+        ixx="0.010451"
+        ixy="-4.2023E-06"
+        ixz="4.0872E-06"
+        iyy="0.015699"
+        iyz="-5.8617E-06"
+        izz="0.010453" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/BR_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.69412 0.098039 0.098039 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/BR_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="BR_joint"
+    type="continuous">
+    <origin
+      xyz="0.021999 -0.1127 -0.22792"
+      rpy="0 0 0" />
+    <parent
+      link="RL6up_link" />
+    <child
+      link="BR_link" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      friction="0.1" />
+  </joint>
+  <link
+    name="L4low_link">
+    <inertial>
+      <origin
+        xyz="-0.048169 -1.1087E-16 -4.8139E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.39839" />
+      <inertia
+        ixx="0.011974"
+        ixy="6.1622E-19"
+        ixz="-6.1581E-21"
+        iyy="6.088E-05"
+        iyz="0.0001118"
+        izz="0.011991" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/L4low_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://circ_rover_description/meshes/L4low_link_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="L4low_joint"
+    type="revolute">
+    <origin
+      xyz="-0.39288 0 -0.0527"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="L4low_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="0"
+      velocity="0" />
+    <dynamics
+      damping="0.1"
+      friction="0.05" />
+  </joint>
+  
+  <gazebo>
+    <joint name="extra_joint_LM" type="revolute">
+      <pose relative_to='LL2M_link'>-0.216506 0.08580 0.1250 0 0 0</pose>
+      <type>revolute</type>
+      <parent>LL2M_link</parent>
+      <child>LL5Mup_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1.5</lower>
+          <upper>1.5</upper>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.05</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>100</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name="extra_joint_LF" type="revolute">
+      <pose relative_to='LL2F_link'>0.216506 0.08580 0.1250 0 0 0</pose>
+      <type>revolute</type>
+      <parent>LL2F_link</parent>
+      <child>LL5Fup_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1.5</lower>
+          <upper>1.5</upper>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.05</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>100</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name="extra_joint_RM" type="revolute">
+      <pose relative_to='RL2M_link'>-0.216506 -0.08580 0.1250 0 0 0</pose>
+      <type>revolute</type>
+      <parent>RL2M_link</parent>
+      <child>RL5Mup_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1.5</lower>
+          <upper>1.5</upper>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.05</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>100</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name="extra_joint_RF" type="revolute">
+      <pose relative_to='RL2F_link'>0.216506 -0.08580 0.1250 0 0 0</pose>
+      <type>revolute</type>
+      <parent>RL2F_link</parent>
+      <child>RL5Fup_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-1.5</lower>
+          <upper>1.5</upper>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.05</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>100</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name="extra_joint_BL" type="revolute">
+      <pose relative_to='L4low_link'>-0.0954 0.281670 0 0 0 0</pose>
+      <type>revolute</type>
+      <parent>L4low_link</parent>
+      <child>LL6up_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1.5</lower>
+          <upper>1.5</upper>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.05</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>100</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name="extra_joint_BR" type="revolute">
+      <pose relative_to='L4low_link'>-0.0954 -0.281670 0 0 0 0</pose>
+      <type>revolute</type>
+      <parent>L4low_link</parent>
+      <child>RL6up_link</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1.5</lower>
+          <upper>1.5</upper>
+        </limit>
+        <dynamics>
+          <damping>0.5</damping>
+          <friction>0.05</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>100</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <plugin name="diffential_drive" filename="libgazebo_ros_diff_drive.so">
+
+      <!--wheel information-->
+
+      <leftJoint>BL_joint</leftJoint>
+      <rightJoint>BR_joint</rightJoint>
+      <wheelDiameter>0.2</wheelDiameter>
+      <wheelSeparation>0.09998</wheelSeparation>
+
+      <!--limits-->
+      <wheelTorque>20</wheelTorque>
+      <wheelAcceleration>1.0</wheelAcceleration>
+    
+      <!--output-->
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometrySource>1</odometrySource>
+      <publishWheelTF>false</publishWheelTF>
+      <publishOdom>true</publishOdom>
+      <plublishWheelJointState>false</plublishWheelJointState>
+      <legacyMode>true</legacyMode>
+      <updateRate>1</updateRate>
+      <commandTopic>cmd_vel</commandTopic>
+    </plugin>
+  </gazebo>
+</robot>

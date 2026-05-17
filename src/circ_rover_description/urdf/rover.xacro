@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<robot name="circ_rover" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:arg name="lidar_visualize" default="true" />
+
+  <!-- Include the base SolidWorks URDF -->
+  <xacro:include filename="$(find circ_rover_description)/urdf/rover_simple_v1_2.urdf" />
+
+  <!-- ============================================== -->
+  <!-- Gazebo Simulation Plugins & Properties         -->
+  <!-- ============================================== -->
+
+  <!-- Add basic friction and materials for the wheels -->
+  <xacro:macro name="wheel_gazebo_props" params="link_name">
+    <gazebo reference="${link_name}">
+      <mu1>0.8</mu1>
+      <mu2>0.8</mu2>
+      <material>Gazebo/DarkGrey</material>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:wheel_gazebo_props link_name="FL_link" />
+  <xacro:wheel_gazebo_props link_name="FR_link" />
+  <xacro:wheel_gazebo_props link_name="ML_link" />
+  <xacro:wheel_gazebo_props link_name="MR_link" />
+  <xacro:wheel_gazebo_props link_name="BL_link" />
+  <xacro:wheel_gazebo_props link_name="BR_link" />
+
+  <!-- Base link material -->
+  <gazebo reference="base_link">
+    <material>Gazebo/Grey</material>
+  </gazebo>
+
+  <!-- ============================================== -->
+  <!-- LiDAR Sensor (GPU Ray)                         -->
+  <!-- ============================================== -->
+  <!-- Assuming the LiDAR is mounted near the center top. We create a virtual link for it if it doesn't exist -->
+  <link name="lidar_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.05" length="0.05"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.1 0.1 0.1 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0.0 0.0 0.2" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="lidar_link">
+    <sensor name="lidar" type="ray">
+      <pose>0 0 0 0 0 0</pose>
+      <always_on>true</always_on>
+      <visualize>${lidar_visualize}</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1.000000</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.12</min>
+          <max>12.0</max>
+          <resolution>0.015</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=scan</remapping>
+        </ros>
+        <output_type>sensor_msgs/LaserScan</output_type>
+        <frame_name>lidar_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ============================================== -->
+  <!-- IMU Sensor                                     -->
+  <!-- ============================================== -->
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+        <ros>
+          <remapping>~/out:=imu/data_raw</remapping>
+        </ros>
+        <initial_orientation_as_reference>false</initial_orientation_as_reference>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ============================================== -->
+  <!-- Joint State Publisher Plugin (for wheels)      -->
+  <!-- ============================================== -->
+  <gazebo>
+    <plugin name="gazebo_ros_joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <ros>
+        <remapping>~/out:=gazebo_joint_states</remapping>
+      </ros>
+      <update_rate>30</update_rate>
+      <joint_name>FL_joint</joint_name>
+      <joint_name>FR_joint</joint_name>
+      <joint_name>ML_joint</joint_name>
+      <joint_name>MR_joint</joint_name>
+      <joint_name>BL_joint</joint_name>
+      <joint_name>BR_joint</joint_name>
+    </plugin>
+  </gazebo>
+
+  <!-- ============================================== -->
+  <!-- Skid Steer Drive Plugin (6 wheels)             -->
+  <!-- ============================================== -->
+  <gazebo>
+    <plugin name="skid_steer_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <remapping>cmd_vel:=cmd_vel</remapping>
+        <remapping>odom:=odom</remapping>
+      </ros>
+
+      <!-- Wheels -->
+      <num_wheel_pairs>3</num_wheel_pairs>
+      
+      <!-- Front pair -->
+      <left_joint>FL_joint</left_joint>
+      <right_joint>FR_joint</right_joint>
+      
+      <!-- Middle pair -->
+      <left_joint>ML_joint</left_joint>
+      <right_joint>MR_joint</right_joint>
+      
+      <!-- Back pair -->
+      <left_joint>BL_joint</left_joint>
+      <right_joint>BR_joint</right_joint>
+
+      <!-- Kinematics -->
+      <wheel_separation>0.5</wheel_separation> <!-- Adjust based on real CAD -->
+      <wheel_diameter>0.2</wheel_diameter>     <!-- Adjust based on real CAD -->
+
+      <!-- Limits -->
+      <max_wheel_torque>200</max_wheel_torque>
+      <max_wheel_acceleration>1.0</max_wheel_acceleration>
+
+      <!-- Outputs -->
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <publish_wheel_tf>false</publish_wheel_tf>
+
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+    </plugin>
+  </gazebo>
+
+</robot>

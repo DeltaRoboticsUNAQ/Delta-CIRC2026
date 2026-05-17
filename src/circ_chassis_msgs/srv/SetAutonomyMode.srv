@@ -1,0 +1,8 @@
+# Set autonomy mode for cmd_vel mux.
+# autonomous=true: use navigation cmd_vel
+# autonomous=false: use teleop cmd_vel
+
+bool autonomous
+---
+bool ok
+string message
