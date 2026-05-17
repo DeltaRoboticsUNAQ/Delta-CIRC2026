@@ -4,6 +4,16 @@ Este workspace contiene una migración **enfocada únicamente en el chasis** del
 - Probarse **desde hoy sin IMU** (proximidad sectorizada, alertas acústicas “inteligentes”, AEB TTC, control de velocidad adaptativo parcial, UI de operador, Pure Pursuit con GPS).
 - Quedar **lista para expansión** (IMU real, LiDAR, más cámaras, Nav2, fusión sensorial).
 
+## Plan de actividades y roadmap
+
+- Configuración inicial del workspace Nav2. Definición del modelo cinemático diferencial y nodos de teleoperación básicos.
+- Desarrollo de nodos de hardware, E-stop (parada de emergencia por software) y configuración de sensores.
+- Integración de IMU y Encoders. Fusión de odometría vía EKF.
+- Ajuste de navegación autónoma. Implementación de GPS Waypoints y tracking para la prueba de "Exploration".
+- Dashboard de control y monitor de vibración activo.
+- Integración en entorno completo "Full Stack". Depuración y dry-runs en terreno irregular.
+- Optimización, preparación de repuestos y ajustes en Utah (CIRC).
+
 ## Paquetes
 - `circ_chassis_msgs`: mensajes/servicios del chasis (proximidad, AEB, control adaptativo, métricas IMU-preparadas).
 - `circ_nav_msgs`: interfaces de navegación (acción de waypoints GPS + `GeoPoint` minimalista).
