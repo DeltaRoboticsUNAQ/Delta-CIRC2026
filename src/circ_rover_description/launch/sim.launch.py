@@ -1,7 +1,6 @@
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler, SetEnvironmentVariable
-from launch.conditions import IfCondition
+from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration, FindExecutable
 from launch_ros.actions import Node
@@ -10,10 +9,6 @@ from launch.event_handlers import OnProcessExit
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('circ_rover_description')
-
-    gui = LaunchConfiguration('gui')
-    rviz = LaunchConfiguration('rviz')
-    lidar_visualize = LaunchConfiguration('lidar_visualize')
     
     # Ensure Gazebo can find the meshes by adding the workspace install/share to the GAZEBO_MODEL_PATH
     workspace_share_dir = os.path.join(pkg_share, '..', '..', 'share')
@@ -24,16 +19,7 @@ def generate_launch_description():
 
     # Process Xacro
     xacro_file = os.path.join(pkg_share, 'urdf', 'rover.xacro')
-    robot_description = {
-        'robot_description': Command([
-            FindExecutable(name='xacro'),
-            ' ',
-            xacro_file,
-            ' ',
-            'lidar_visualize:=',
-            lidar_visualize,
-        ])
-    }
+    robot_description = {'robot_description': Command(['xacro ', xacro_file])}
 
     # Start robot_state_publisher
     node_robot_state_publisher = Node(
@@ -58,9 +44,6 @@ def generate_launch_description():
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]),
-        launch_arguments={
-            'gui': gui,
-        }.items(),
     )
 
     # Spawn the robot in Gazebo
@@ -82,26 +65,10 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         output='screen',
-        arguments=['-d', rviz_config_file] if os.path.exists(rviz_config_file) else [],
-        condition=IfCondition(rviz),
+        arguments=['-d', rviz_config_file] if os.path.exists(rviz_config_file) else []
     )
 
     return LaunchDescription([
-        DeclareLaunchArgument(
-            'gui',
-            default_value='true',
-            description='Whether to start Gazebo client GUI (gzclient).',
-        ),
-        DeclareLaunchArgument(
-            'rviz',
-            default_value='true',
-            description='Whether to start RViz2.',
-        ),
-        DeclareLaunchArgument(
-            'lidar_visualize',
-            default_value='true',
-            description='Whether to visualize the LiDAR rays in Gazebo.',
-        ),
         set_gazebo_model_path_cmd,
         node_joint_state_publisher,
         node_robot_state_publisher,

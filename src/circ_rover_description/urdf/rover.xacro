@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <robot name="circ_rover" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:arg name="lidar_visualize" default="true" />
-
   <!-- Include the base SolidWorks URDF -->
   <xacro:include filename="$(find circ_rover_description)/urdf/rover_simple_v1_2.urdf" />
 
@@ -56,7 +54,7 @@
     <sensor name="lidar" type="ray">
       <pose>0 0 0 0 0 0</pose>
       <always_on>true</always_on>
-      <visualize>${lidar_visualize}</visualize>
+      <visualize>true</visualize>
       <update_rate>10</update_rate>
       <ray>
         <scan>
