@@ -22,36 +22,6 @@ Este workspace contiene una migración **enfocada únicamente en el chasis** del
 - `circ_rover_description`: URDF/meshes del rover (reutilizado de `rover_simple_v1_2`).
 - `circ_chassis_teleop`: teleoperación con joystick (`joy` + `teleop_twist_joy`) publicando a `/cmd_vel_teleop`.
 
-## Arquitectura (alto nivel)
-
-```mermaid
-flowchart LR
-  Teleop[/cmd_vel_teleop/] --> Mux[cmd_vel_mux]
-  Nav[/cmd_vel_nav/ Pure Pursuit] --> Mux
-  Mux --> Raw[/cmd_vel_raw/]
-
-  Scan[/scan/ LaserScan] --> Sector[proximity_sectorizer]
-  Sector --> Tel[/chassis/proximity/telemetry/]
-  Tel --> Acoustic[acoustic_alert]
-  Tel --> AEB[aeb TTC]
-
-  Tel --> Adapt[adaptive_speed]
-  AEB --> Filter[cmd_vel_safety_filter]
-  Adapt --> Filter
-  Raw --> Filter
-  Filter --> Safe[/cmd_vel_safe/]
-  Safe --> HW[serial_bridge (opcional)]
-
-  GPS[/gps/fix/] --> Loc[gps_localization]
-  Loc --> Odom[/gps/odom/]
-  Loc --> TF[(TF map→base_link)]
-  Odom --> Nav
-
-  Tel --> UI[operator_ui]
-  AEB --> UI
-  Adapt --> UI
-  Acoustic --> UI
-```
 
 ## Quickstart (sin hardware, prueba inmediata)
 
@@ -70,9 +40,9 @@ colcon build
 source install/setup.bash
 ```
 
-2) Levantar chasis en modo simulación de proximidad (sin serial):
+2) Levantar chasis en modo simulación de proximidad:
 ```bash
-ros2 launch circ_chassis_bringup chassis.launch.py use_scan_sim:=true use_serial:=false use_ui:=true
+ros2 launch circ_chassis_bringup chassis.launch.py 
 ```
 
 3) En otra terminal, teleoperar (publica a `/cmd_vel_teleop`):
@@ -86,40 +56,6 @@ Nota: si no tienes instalado `teleop_twist_keyboard` en el sistema:
 ```bash
 sudo apt install ros-humble-teleop-twist-keyboard
 ```
-
-### Alternativa: Joystick
-Si el operador usa joystick, lanza:
-```bash
-source /opt/ros/humble/setup.bash
-source /home/stc/circ2025_migration/ros2_ws/install/setup.bash
-ros2 launch circ_chassis_teleop joystick_teleop.launch.py
-```
-Config editable del mapeo: [src/circ_chassis_teleop/config/xbox_default.config.yaml](src/circ_chassis_teleop/config/xbox_default.config.yaml)
-
-4) UI de operador:
-- Abrir `http://localhost:8080/`
-
-5) Probar AEB TTC:
-- Baja `obstacle_distance_m` en `circ_chassis_bringup/config/chassis_params.yaml` o vía parámetros.
-- Observa `/cmd_vel_safe` bajar a cero cuando el TTC cruza umbral.
-
-## Operación con hardware (serial)
-
-Lanza con serial habilitado:
-```bash
-ros2 launch circ_chassis_bringup chassis.launch.py use_scan_sim:=false use_serial:=true
-```
-
-Ajusta en `circ_chassis_bringup/config/chassis_params.yaml`:
-- `serial_bridge.ros__parameters.port`
-- `serial_bridge.ros__parameters.baudrate`
-- `serial_bridge.ros__parameters.tx_header` (si tu MCU espera `TWIST,...`)
-- `serial_bridge.ros__parameters.tx_mode`:
-  - `twist_csv`: envía `v,w` (equivalente al ROS1 actual)
-  - `skid_steer_lr_csv`: envía `v_left,v_right` (útil si tu firmware ya separa lados)
-- `serial_bridge.ros__parameters.wheel_separation_m` (solo `skid_steer_lr_csv`)
-- `serial_bridge.ros__parameters.linear_scale`, `angular_scale` (para convertir unidades/escala)
-
 ## Interfaces ROS2
 
 ### Topics principales
@@ -157,35 +93,9 @@ Ajusta en `circ_chassis_bringup/config/chassis_params.yaml`:
 ### TF
 - `map → base_link` publicado por `gps_localization`.
 
-## Nota sobre GPS sin IMU
-- `gps_localization` estima yaw con deltas de GPS (course over ground).
-- A baja velocidad o con GPS ruidoso, el yaw es inestable; se recomienda:
-  - `min_movement_for_heading_m` mayor (por ejemplo 1–2 m)
-  - `heading_lpf_alpha` más bajo
-  - Pure Pursuit con `lookahead_m` más grande.
-
-### Timestamp de GPS
-El `serial_bridge` acepta varias formas:
-- `GPS,lat,lon`
-- `GPS,lat,lon,unix_ms`
-- `GPS,lat,lon,sec,nsec`
-y publica `sensor_msgs/NavSatFix` en `/gps/fix`.
-
-## Nota sobre alertas acústicas
-La UI web reproduce beeps con WebAudio basados en `/chassis/proximity/acoustic_alert`.
-Por restricciones de navegadores, debes presionar el botón **“Habilitar audio de alertas”** una vez.
-
 
 cd ~/circ2025_migration/ros2_ws
 colcon build --packages-select circ_rover_description
 source install/setup.bash
 ros2 launch circ_rover_description sim.launch.py
 
-# WSL/Performance tip: run without heavy GUIs / LiDAR ray visualization
-# (Defaults are unchanged; these are optional speed-focused overrides)
-ros2 launch circ_rover_description sim.launch.py gui:=false rviz:=false lidar_visualize:=false
-
-
-ros2 run circ_rover_safety aeb_controller --ros-args -p scan_topic:=/scan -p cmd_topic_in:=/cmd_vel_raw -p cmd_topic_out:=/cmd_vel
-
-ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=/cmd_vel_raw
