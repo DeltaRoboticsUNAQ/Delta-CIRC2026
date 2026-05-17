@@ -2,7 +2,7 @@
 
 Este workspace contiene una migración **enfocada únicamente en el chasis** del rover a **ROS2 Humble**, diseñada para:
 - Probarse **desde hoy sin IMU** (proximidad sectorizada, alertas acústicas “inteligentes”, AEB TTC, control de velocidad adaptativo parcial, UI de operador, Pure Pursuit con GPS).
-- Quedar **lista para expansión** (IMU real, LiDAR, más cámaras, Nav2, fusión sensorial).
+- Quedar **lista para expansión** (IMU real, LiDAR, más cámaras, Nav2).
 
 ## Plan de actividades y roadmap
 
