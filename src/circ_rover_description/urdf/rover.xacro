@@ -110,6 +110,29 @@
   </gazebo>
 
   <!-- ============================================== -->
+  <!-- GPS Sensor                                     -->
+  <!-- ============================================== -->
+  <link name="gps_link"/>
+  <joint name="gps_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="gps_link"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="gps_link">
+    <sensor name="gps_sensor" type="gps">
+      <always_on>true</always_on>
+      <update_rate>10.0</update_rate>
+      <plugin name="gps_plugin" filename="libgazebo_ros_gps_sensor.so">
+        <ros>
+          <remapping>~/out:=gps/fix</remapping>
+        </ros>
+        <frame_name>gps_link</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ============================================== -->
   <!-- Joint State Publisher Plugin (for wheels)      -->
   <!-- ============================================== -->
   <gazebo>

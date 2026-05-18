@@ -186,6 +186,12 @@ ros2 launch circ_rover_description sim.launch.py
 ros2 launch circ_rover_description sim.launch.py gui:=false rviz:=false lidar_visualize:=false
 
 
-ros2 run circ_rover_safety aeb_controller --ros-args -p scan_topic:=/scan -p cmd_topic_in:=/cmd_vel_raw -p cmd_topic_out:=/cmd_vel
 
+ros2 launch circ_rover_description sim.launch.py
+
+ros2 launch circ_rover_description sim.launch.py world:=forest.world
+
+
+ros2 run circ_rover_safety unified_safety_controller
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=/cmd_vel_raw
+python3 src/circ_rover_telemetry/scripts/gps_monitor.py
