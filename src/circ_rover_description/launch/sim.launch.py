@@ -1,40 +1,20 @@
 import os
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler, SetEnvironmentVariable, DeclareLaunchArgument
+from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration, FindExecutable, PathJoinSubstitution
+from launch.substitutions import Command, LaunchConfiguration, FindExecutable
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
 from launch.event_handlers import OnProcessExit
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('circ_rover_description')
     
-    # Declare the world argument
-    world_arg = DeclareLaunchArgument(
-        'world',
-        default_value='empty.world',
-        description='Name of the Gazebo world file to load (empty.world, mars.world, moon.world, etc.)'
-    )
-    
-    x_arg = DeclareLaunchArgument('x', default_value='0.0', description='Spawn X position')
-    y_arg = DeclareLaunchArgument('y', default_value='0.0', description='Spawn Y position')
-    z_arg = DeclareLaunchArgument('z', default_value='1.5', description='Spawn Z position (1.5 to prevent clipping through uneven terrain)')
-
-    world_path = PathJoinSubstitution([
-        FindPackageShare('circ_rover_description'),
-        'worlds',
-        LaunchConfiguration('world')
-    ])
-
     # Ensure Gazebo can find the meshes by adding the workspace install/share to the GAZEBO_MODEL_PATH
     workspace_share_dir = os.path.join(pkg_share, '..', '..', 'share')
-    models_dir = os.path.join(pkg_share, 'models')
-    
     set_gazebo_model_path_cmd = SetEnvironmentVariable(
         name='GAZEBO_MODEL_PATH',
-        value=[os.environ.get('GAZEBO_MODEL_PATH', ''), ':', workspace_share_dir, ':', models_dir]
+        value=[os.environ.get('GAZEBO_MODEL_PATH', ''), ':', workspace_share_dir]
     )
 
     # Process Xacro
@@ -64,7 +44,6 @@ def generate_launch_description():
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]),
-        launch_arguments={'world': world_path}.items()
     )
 
     # Spawn the robot in Gazebo
@@ -73,9 +52,7 @@ def generate_launch_description():
         executable='spawn_entity.py',
         arguments=['-topic', 'robot_description',
                    '-entity', 'circ_rover',
-                   '-x', LaunchConfiguration('x'),
-                   '-y', LaunchConfiguration('y'),
-                   '-z', LaunchConfiguration('z')],
+                   '-z', '0.2'], # spawn slightly above ground
         output='screen'
     )
 
@@ -92,10 +69,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        world_arg,
-        x_arg,
-        y_arg,
-        z_arg,
         set_gazebo_model_path_cmd,
         node_joint_state_publisher,
         node_robot_state_publisher,

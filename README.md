@@ -94,50 +94,8 @@ sudo apt install ros-humble-teleop-twist-keyboard
 - `map → base_link` publicado por `gps_localization`.
 
 
-## Simulación del rover (Gazebo Classic)
-
-Build del paquete de simulación:
-```bash
 cd ~/circ2025_migration/ros2_ws
 colcon build --packages-select circ_rover_description
 source install/setup.bash
-```
-
-Lanzar simulación (por defecto carga un mundo plano `flat`):
-```bash
 ros2 launch circ_rover_description sim.launch.py
-```
 
-Cambiar mundo con argumentos del launch:
-```bash
-# Terreno rugoso para vibraciones (IMU)
-ros2 launch circ_rover_description sim.launch.py world:=rocks
-
-# Escaleras / irregularidad repetitiva
-ros2 launch circ_rover_description sim.launch.py world:=stairs
-
-# Rampa + off-camber para validar inclinación / control adaptativo
-ros2 launch circ_rover_description sim.launch.py world:=ramp
-
-# Mundos adicionales (si existen en worlds/)
-ros2 launch circ_rover_description sim.launch.py world:=forest
-ros2 launch circ_rover_description sim.launch.py world:=moon
-ros2 launch circ_rover_description sim.launch.py world:=mars
-ros2 launch circ_rover_description sim.launch.py world:=low_moon
-ros2 launch circ_rover_description sim.launch.py world:=curiosity
-```
-
-También puedes pasar el nombre del archivo directamente:
-```bash
-ros2 launch circ_rover_description sim.launch.py world:=forest.world
-```
-
-O forzar una ruta absoluta a un mundo externo:
-```bash
-ros2 launch circ_rover_description sim.launch.py world_file:=/abs/path/to/mi_mundo.world
-```
-
-### Agregar más mundos (escalable)
-- Coloca un archivo `.world`/`.sdf` en `src/circ_rover_description/worlds/`.
-- Rebuild: `colcon build --packages-select circ_rover_description`.
-- Lanza con `world:=<nombre_sin_extension>`.
