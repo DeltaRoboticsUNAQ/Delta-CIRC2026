@@ -3,7 +3,7 @@ project(circ_rover_description)
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY urdf meshes rviz launch
+install(DIRECTORY urdf meshes rviz launch worlds models
   DESTINATION share/${PROJECT_NAME}
 )
 
