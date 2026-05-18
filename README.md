@@ -176,22 +176,50 @@ La UI web reproduce beeps con WebAudio basados en `/chassis/proximity/acoustic_a
 Por restricciones de navegadores, debes presionar el botón **“Habilitar audio de alertas”** una vez.
 
 
+## Simulación del rover (Gazebo Classic)
+
+Build del paquete de simulación:
+```bash
 cd ~/circ2025_migration/ros2_ws
 colcon build --packages-select circ_rover_description
 source install/setup.bash
+```
+
+Lanzar simulación (por defecto carga un mundo plano `flat`):
+```bash
 ros2 launch circ_rover_description sim.launch.py
+```
 
-# WSL/Performance tip: run without heavy GUIs / LiDAR ray visualization
-# (Defaults are unchanged; these are optional speed-focused overrides)
-ros2 launch circ_rover_description sim.launch.py gui:=false rviz:=false lidar_visualize:=false
+Cambiar mundo con argumentos del launch:
+```bash
+# Terreno rugoso para vibraciones (IMU)
+ros2 launch circ_rover_description sim.launch.py world:=rocks
 
+# Escaleras / irregularidad repetitiva
+ros2 launch circ_rover_description sim.launch.py world:=stairs
 
+# Rampa + off-camber para validar inclinación / control adaptativo
+ros2 launch circ_rover_description sim.launch.py world:=ramp
 
-ros2 launch circ_rover_description sim.launch.py
+# Mundos adicionales (si existen en worlds/)
+ros2 launch circ_rover_description sim.launch.py world:=forest
+ros2 launch circ_rover_description sim.launch.py world:=moon
+ros2 launch circ_rover_description sim.launch.py world:=mars
+ros2 launch circ_rover_description sim.launch.py world:=low_moon
+ros2 launch circ_rover_description sim.launch.py world:=curiosity
+```
 
+También puedes pasar el nombre del archivo directamente:
+```bash
 ros2 launch circ_rover_description sim.launch.py world:=forest.world
+```
 
+O forzar una ruta absoluta a un mundo externo:
+```bash
+ros2 launch circ_rover_description sim.launch.py world_file:=/abs/path/to/mi_mundo.world
+```
 
-ros2 run circ_rover_safety unified_safety_controller
-ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=/cmd_vel_raw
-python3 src/circ_rover_telemetry/scripts/gps_monitor.py
+### Agregar más mundos (escalable)
+- Coloca un archivo `.world`/`.sdf` en `src/circ_rover_description/worlds/`.
+- Rebuild: `colcon build --packages-select circ_rover_description`.
+- Lanza con `world:=<nombre_sin_extension>`.

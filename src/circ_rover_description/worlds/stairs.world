@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<sdf version="1.7">
+  <world name="stairs">
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <gravity>0 0 -9.81</gravity>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>200 200</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>200 200</size>
+            </plane>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Staircase built from progressively taller blocks -->
+    <model name="stairs">
+      <static>true</static>
+      <pose>6 0 0 0 0 0</pose>
+      <link name="link">
+        <!-- step: tread=0.30m, width=3.0m, rise=0.06m -->
+        <collision name="step_0"><pose>0.15 0 0.03 0 0 0</pose><geometry><box><size>0.30 3.0 0.06</size></box></geometry></collision>
+        <visual name="step_0_vis"><pose>0.15 0 0.03 0 0 0</pose><geometry><box><size>0.30 3.0 0.06</size></box></geometry></visual>
+
+        <collision name="step_1"><pose>0.45 0 0.06 0 0 0</pose><geometry><box><size>0.30 3.0 0.12</size></box></geometry></collision>
+        <visual name="step_1_vis"><pose>0.45 0 0.06 0 0 0</pose><geometry><box><size>0.30 3.0 0.12</size></box></geometry></visual>
+
+        <collision name="step_2"><pose>0.75 0 0.09 0 0 0</pose><geometry><box><size>0.30 3.0 0.18</size></box></geometry></collision>
+        <visual name="step_2_vis"><pose>0.75 0 0.09 0 0 0</pose><geometry><box><size>0.30 3.0 0.18</size></box></geometry></visual>
+
+        <collision name="step_3"><pose>1.05 0 0.12 0 0 0</pose><geometry><box><size>0.30 3.0 0.24</size></box></geometry></collision>
+        <visual name="step_3_vis"><pose>1.05 0 0.12 0 0 0</pose><geometry><box><size>0.30 3.0 0.24</size></box></geometry></visual>
+
+        <collision name="step_4"><pose>1.35 0 0.15 0 0 0</pose><geometry><box><size>0.30 3.0 0.30</size></box></geometry></collision>
+        <visual name="step_4_vis"><pose>1.35 0 0.15 0 0 0</pose><geometry><box><size>0.30 3.0 0.30</size></box></geometry></visual>
+
+        <collision name="step_5"><pose>1.65 0 0.18 0 0 0</pose><geometry><box><size>0.30 3.0 0.36</size></box></geometry></collision>
+        <visual name="step_5_vis"><pose>1.65 0 0.18 0 0 0</pose><geometry><box><size>0.30 3.0 0.36</size></box></geometry></visual>
+
+        <collision name="step_6"><pose>1.95 0 0.21 0 0 0</pose><geometry><box><size>0.30 3.0 0.42</size></box></geometry></collision>
+        <visual name="step_6_vis"><pose>1.95 0 0.21 0 0 0</pose><geometry><box><size>0.30 3.0 0.42</size></box></geometry></visual>
+
+        <collision name="step_7"><pose>2.25 0 0.24 0 0 0</pose><geometry><box><size>0.30 3.0 0.48</size></box></geometry></collision>
+        <visual name="step_7_vis"><pose>2.25 0 0.24 0 0 0</pose><geometry><box><size>0.30 3.0 0.48</size></box></geometry></visual>
+
+        <collision name="step_8"><pose>2.55 0 0.27 0 0 0</pose><geometry><box><size>0.30 3.0 0.54</size></box></geometry></collision>
+        <visual name="step_8_vis"><pose>2.55 0 0.27 0 0 0</pose><geometry><box><size>0.30 3.0 0.54</size></box></geometry></visual>
+
+        <collision name="step_9"><pose>2.85 0 0.30 0 0 0</pose><geometry><box><size>0.30 3.0 0.60</size></box></geometry></collision>
+        <visual name="step_9_vis"><pose>2.85 0 0.30 0 0 0</pose><geometry><box><size>0.30 3.0 0.60</size></box></geometry></visual>
+      </link>
+    </model>
+  </world>
+</sdf>
