@@ -1,1 +1,0 @@
-/home/stc/arm_ws/src/my_package/scripts/arm_keyboard_teleop.py

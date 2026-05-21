@@ -1,1 +1,0 @@
-/home/stc/arm_ws/src/my_package/launch/sim_rviz.launch.py

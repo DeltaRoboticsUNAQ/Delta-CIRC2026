@@ -101,10 +101,12 @@
   </link>
 
   <joint name="humerus_low_joint" type="revolute">
+    <!-- Se agrega una rotación de -0.040 en Y (Pitch) -->
     <origin xyz="0.02545 0.027 0.0267" rpy="0 -0.040 0" />
     <parent link="bracket_link" />
     <child link="humerus_link" />
     <axis xyz="0 -1 0" />
+    <!-- El nuevo límite superior es 0 y se desplaza el límite inferior -->
     <limit lower="-1.32" upper="0.0" effort="10" velocity="1" />
     <dynamics damping="0.05" friction="0.1" />
   </joint>
@@ -140,10 +142,12 @@
   </link>
 
   <joint name="forearm_low_joint" type="revolute">
+    <!-- Se agrega una rotación de 0.381 en Y (Pitch) -->
     <origin xyz="0.078419 -0.003 0.38581" rpy="0 0.381 0" />
     <parent link="humerus_link" />
     <child link="forearm_link" />
     <axis xyz="0 1 0" />
+    <!-- El nuevo límite superior es 0 y se desplaza el límite inferior -->
     <limit lower="-1.216" upper="0.0" effort="10" velocity="1" />
     <dynamics damping="0.05" friction="0.1" />
   </joint>
@@ -272,12 +276,5 @@
       <state_interface name="effort"/>
     </joint>
   </ros2_control>
-
-  <!-- PLUGIN DE GAZEBO                           -->
-  <gazebo>
-    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <!-- Aquí le diremos a Gazebo dónde están los parámetros de los motores -->
-      <parameters>$(find my_package)/config/controllers.yaml</parameters>
-    </plugin>
-  </gazebo>
+  
 </robot>

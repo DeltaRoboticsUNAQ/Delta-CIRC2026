@@ -1,2 +1,0 @@
-Invoking command in '/home/stc/arm_ws/build/my_package': /usr/bin/cmake --build /home/stc/arm_ws/build/my_package -- -j12 -l12
-Invoked command in '/home/stc/arm_ws/build/my_package' returned '2': /usr/bin/cmake --build /home/stc/arm_ws/build/my_package -- -j12 -l12

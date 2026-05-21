@@ -1,0 +1,31 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Frecuencia de actualización en Hz (100 veces por segundo)
+
+    # 1. El controlador que mueve el brazo
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    # 2. El broadcaster que lee el estado de los motores
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+
+# Configuración específica de nuestro controlador del brazo
+arm_controller:
+  ros__parameters:
+    joints:
+      - bracket_joint
+      - humerus_low_joint
+      - forearm_low_joint
+      - ubracket_joint
+      - endeffector_joint
+    
+    # Le mandamos posiciones objetivo
+    command_interfaces:
+      - position
+      
+    # Leemos en qué posición y a qué velocidad van
+    state_interfaces:
+      - position
+      - velocity
