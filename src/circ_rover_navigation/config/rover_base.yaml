@@ -1,0 +1,32 @@
+### rover_base.yaml  ──  paquete: circ_rover_navigation/config
+#
+#  Constantes físicas del rover skid-steer. Cambias el hardware -> editas
+#  este archivo, sin tocar ni recompilar el nodo.
+#
+#  Uso:
+#    ros2 run circ_rover_navigation skid_steer_base \
+#      --ros-args --params-file rover_base.yaml
+
+skid_steer_base:
+  ros__parameters:
+
+    wheel_radius:   0.10      # [m]  radio de rueda
+    track_width:    0.845     # [m]  ANCHO DE VÍA lateral (izq <-> der)
+                              #      OJO: en skid-steer el valor EFECTIVO suele
+                              #      ser 1.5-2x el geométrico por el patinaje.
+                              #      Si los giros comandados quedan cortos/largos,
+                              #      sube/baja este número hasta que un giro de
+                              #      90° comandado coincida con el yaw del IMU.
+
+    max_wheel_rpm:  200.0     # clamp de seguridad (no-load del 5203 = 223 RPM)
+    rpm_correction: 1.0       # corrige un PPR mal puesto en el firmware SIN
+                              #      reflashear. Si la prueba de "1 vuelta a mano"
+                              #      da 389° en vez de 360°, pon 0.925 aquí
+                              #      (= 2786/3012.8). Lo ideal es arreglar el PPR
+                              #      en el STM32, esto es el parche rápido.
+
+    odom_rate:      50.0      # [Hz] frecuencia de integración de odometría
+    cmd_timeout:    0.5       # [s]  sin /cmd_vel -> frena las ruedas
+    publish_tf:     false     # el TF odom->base_link lo emite el EKF local
+    odom_frame:     odom
+    base_frame:     base_link
