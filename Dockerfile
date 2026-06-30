@@ -22,3 +22,11 @@ RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
 WORKDIR /root
 
 CMD ["/bin/bash"]
+
+# To build use:
+# docker build -t ros2_delta .
+
+#docker run -it \
+#  --name ros2_delta \
+#  --network host \
+#  ros2_delta
