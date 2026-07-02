@@ -33,7 +33,7 @@ public:
 
         // ── Parámetros LiDAR / corredor frontal ──────────────────────────
         this->declare_parameter("front_angle_span_deg", 60.0);
-        this->declare_parameter("robot_width_m",         0.6);
+        this->declare_parameter("robot_width_m",         0.1);
 
         // ── Parámetros Adaptive Speed ─────────────────────────────────────
         this->declare_parameter("warning_distance",       2.0);   // m  → empieza a reducir

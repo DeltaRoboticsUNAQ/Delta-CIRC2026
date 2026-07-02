@@ -14,6 +14,12 @@ install(PROGRAMS
   RENAME skid_steer_base
 )
 
+install(PROGRAMS
+  scripts/heading_calibration.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME heading_calibration
+)
+
 install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
 )

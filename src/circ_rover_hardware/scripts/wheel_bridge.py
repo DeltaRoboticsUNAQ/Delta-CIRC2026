@@ -5,13 +5,12 @@ wheel_bridge.py   ──  paquete: circ_rover_hardware
 Bridge serie para el ÚNICO STM32 que lee AMBOS encoders y controla AMBOS lados.
 Un solo puerto, un solo nodo. (La IMU y el GPS tienen sus propios puertos/nodos.)
 
-  STM32 -> ROS (CSV, 5 campos):  posL,velL,posR,velR,t
-  ROS -> STM32 (setpoints):      SP:<rpm_izq>,<rpm_der>\\n
+  STM32 -> ROS (CSV, 9 campos):  pos_L,vel_L,pos_R,vel_R,t,sp_L,sp_R,u_L,u_R
+  ROS -> STM32 (setpoints):      SP:<rpm_izq>,<rpm_der>\n
 
-Esta capa solo traduce serie <-> ROS. La cinemática (cmd_vel -> setpoints,
-encoders -> odometría) vive en skid_steer_base, que NO cambia: este bridge
-publica wheel_vel/left y wheel_vel/right y se suscribe a cmd_wheel/left y right,
-exactamente los mismos topics de antes.
+velL = idx 1, velR = idx 3 (en RPM). Esta capa solo traduce serie <-> ROS;
+la cinemática vive en skid_steer_base. Publica wheel_vel/left y wheel_vel/right
+y se suscribe a cmd_wheel/left y right.
 """
 
 import rclpy
@@ -27,7 +26,7 @@ class WheelBridge(Node):
         super().__init__('wheel_bridge')
 
         # ── Parámetros ──
-        self.declare_parameter('port', '/dev/ttyACM1')
+        self.declare_parameter('port', '/dev/ttyACM0')
         self.declare_parameter('baud', 115200)
         self.declare_parameter('send_rate', 50.0)        # [Hz] envío de setpoints
         self.declare_parameter('publish_debug', True)
@@ -72,14 +71,15 @@ class WheelBridge(Node):
                 time.sleep(1.0)
 
     def read_loop(self):
-        """Lee CSV: posL,velL,posR,velR,t  (velL=idx1, velR=idx3, en RPM)."""
+        """Lee CSV de 9 campos: pos_L,vel_L,pos_R,vel_R,t,sp_L,sp_R,u_L,u_R
+           (velL = idx1, velR = idx3, en RPM)."""
         while rclpy.ok():
             try:
                 raw = self.ser.readline().decode('utf-8', errors='ignore').strip()
                 if not raw:
                     continue
                 parts = raw.split(',')
-                if len(parts) != 5:
+                if len(parts) != 9:
                     continue
                 vals = [float(p) for p in parts]
 

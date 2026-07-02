@@ -99,3 +99,16 @@ colcon build --packages-select circ_rover_description
 source install/setup.bash
 ros2 launch circ_rover_description sim.launch.py
 
+
+# 1. Lanza todo con hardware real
+ros2 launch circ_rover_navigation bringup.launch.py use_sim:=false gps:=true
+
+# 2. En otra terminal, corre el nodo de calibración
+ros2 run circ_rover_navigation heading_calibration
+
+# 3. Asegúrate de tener ESPACIO LIBRE al frente (va a avanzar ~3 m) y dispara:
+ros2 service call /calibrate_heading std_srvs/srv/Trigger
+
+
+Launch cabron
+ros2 launch circ_rover_navigation bringup.launch.py use_sim:=true gps:=true gps_port:=/dev/ttyACMx

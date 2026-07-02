@@ -1,0 +1,32 @@
+### navsat_transform.yaml  ──  circ_rover_navigation/config
+#
+#  navsat_transform_node — el traductor GPS <-> mundo.
+#  Convierte /fix (lat/lon) en /odometry/gps (x,y en el frame map), que el
+#  ekf_global usa como posición absoluta. También publica /gps/filtered para ver
+#  la pose fusionada de vuelta en lat/lon (útil en mapas).
+
+navsat_transform:
+  ros__parameters:
+
+    frequency: 30.0
+    delay: 3.0                       # espera a que existan los TF al arrancar
+
+    # ── HEADING (el punto delicado sin magnetómetro) ──
+    magnetic_declination_radians: 0.0  # SOLO importa con magnetómetro. Sin él, 0.
+    yaw_offset: 0.0                    # offset entre el "0" del IMU y el Este.
+                                       # Con el BNO085 en Game RV el yaw es
+                                       # RELATIVO (arranca en 0 donde booteó), así
+                                       # que no hay un valor estático correcto: el
+                                       # heading real se calibra con movimiento
+                                       # (ver explicación). Para la prueba estática
+                                       # déjalo en 0.
+    use_odometry_yaw: false            # usa el yaw del IMU (no el de la odometría)
+
+    # ── Modo 2D ──
+    zero_altitude: true                # rover terrestre: ignora la altitud del GPS
+
+    # ── Salidas ──
+    broadcast_utm_transform: false     # ponlo en true solo para depurar en RViz
+    publish_filtered_gps: true         # publica /gps/filtered (pose en lat/lon)
+
+    wait_for_datum: false              # toma el primer fix como origen del mapa
