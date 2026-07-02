@@ -11,13 +11,14 @@ RUN apt-get update && \
         python3-opencv \
         libopencv-dev \
         ros-humble-demo-nodes-py \
-        ros-humble-rviz2 \
         ros-humble-tf2 \
         ros-humble-tf2-tools \
         ros-humble-tf2-ros \
         ros-humble-tf2-msgs \
         ros-humble-cv-bridge \
         ros-humble-image-transport \
+        ros-humble-navigation2 \
+        ros-humble-nav2-bringup \
         v4l-utils \
         usbutils \
         ros2-testing-apt-source \
