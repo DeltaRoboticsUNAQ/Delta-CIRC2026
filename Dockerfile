@@ -14,6 +14,8 @@ RUN apt-get update && \
         ros-humble-tf2-tools \
         ros-humble-tf2-ros \
         ros-humble-tf2-msgs \
+        ros2-testing-apt-source \
+        ros-humble-depthai-ros-v3 \
         && rm -rf /var/lib/apt/lists/*
 
 # Source ROS automatically
