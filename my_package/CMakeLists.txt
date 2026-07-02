@@ -54,12 +54,14 @@ install(PROGRAMS
   scripts/keyboard_arduino.py
   scripts/arm_keyboard_teleop.py
   scripts/arm_hw_teleop_bridge.py
+  scripts/lector_stm32.py
   scripts/arm_hardware_bridge.py
   scripts/stm32_hardware_bridge.py
   scripts/fake_stm32.py
   scripts/moveit_hw_bridge.py
   scripts/robot_description_publisher.py
   scripts/gazebo_set_initial_joint_positions.py
+  scripts/arm_moveit_teleop_actions.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

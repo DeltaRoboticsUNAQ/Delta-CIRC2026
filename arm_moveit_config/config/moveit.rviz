@@ -6,7 +6,7 @@ Panels:
       Expanded:
         - /MotionPlanning1
       Splitter Ratio: 0.5
-    Tree Height: 207
+    Tree Height: 206
   - Class: rviz_common/Help
     Name: Help
   - Class: rviz_common/Views
@@ -66,6 +66,16 @@ Visualization Manager:
           Expand Link Details: false
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
+          actuator_forearm_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          actuator_humerus_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           base_link:
             Alpha: 1
             Show Axes: false
@@ -91,11 +101,35 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          left_gear_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          right_gear_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          shaft_forearm_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          shaft_humerus_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           ubracket_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
+          world:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
         Loop Animation: true
         Robot Alpha: 0.5
         Robot Color: 150; 50; 150
@@ -142,6 +176,16 @@ Visualization Manager:
           Expand Link Details: false
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
+          actuator_forearm_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          actuator_humerus_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           base_link:
             Alpha: 1
             Show Axes: false
@@ -167,11 +211,35 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          left_gear_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          right_gear_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          shaft_forearm_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          shaft_humerus_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           ubracket_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
+          world:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
         Robot Alpha: 0.5
         Show Robot Collision: false
         Show Robot Visual: true
@@ -195,7 +263,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2
+      Distance: 1.7837198972702026
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -210,15 +278,15 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6249998211860657
+      Pitch: 0.1799989491701126
       Target Frame: base_link
       Value: Orbit (rviz_default_plugins)
-      Yaw: 2.5920052528381348
+      Yaw: 3.086994171142578
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1107
+  Height: 1158
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -227,9 +295,9 @@ Window Geometry:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000100000000000002b4000003fdfc0200000005fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000003f00fffffffb000000100044006900730070006c006100790073010000003b00000150000000c700fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000191000001d00000016900fffffffb0000000800480065006c0070000000029a0000006e0000006e00fffffffb0000000a005600690065007700730100000367000000d1000000a000ffffff000004ba000003fd00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000100000000000002b400000430fc0200000005fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000003f00fffffffb000000100044006900730070006c006100790073010000003b0000014f000000c700fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000190000001870000016900fffffffb0000000800480065006c0070000000029a0000006e0000006e00fffffffb0000000a00560069006500770073010000031d0000014e000000a000ffffff000004ba0000043000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: false
   Width: 1908
-  X: -32
-  Y: -32
+  X: -19
+  Y: -3

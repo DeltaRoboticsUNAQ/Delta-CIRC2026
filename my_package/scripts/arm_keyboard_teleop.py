@@ -7,8 +7,7 @@ from typing import Dict
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import JointState
-
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 def getch_blocking():
     """Lee una tecla de forma bloqueante en el terminal actual."""
@@ -20,7 +19,6 @@ def getch_blocking():
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
-
 
 class ArmKeyboardTeleop(Node):
     def __init__(self):
@@ -41,8 +39,9 @@ class ArmKeyboardTeleop(Node):
         # Estado actual
         self.positions: Dict[str, float] = {name: 0.0 for name in self.joint_names}
 
-        # Publisher de /joint_states
-        self.pub = self.create_publisher(JointState, 'joint_states', 10)
+        # ======== EL CAMBIO MÁGICO PARA GAZEBO ========
+        # Publisher de /arm_controller/joint_trajectory
+        self.pub = self.create_publisher(JointTrajectory, '/arm_controller/joint_trajectory', 10)
 
         # Timer para publicar a 50 Hz
         self.timer = self.create_timer(0.02, self.timer_cb)
@@ -52,11 +51,12 @@ class ArmKeyboardTeleop(Node):
         self._thread = threading.Thread(target=self.keyboard_loop, daemon=True)
         self._thread.start()
 
-        self.get_logger().info('Teleop por teclado listo (5 juntas).')
+        self.get_logger().info('Teleop por teclado listo y conectado a Gazebo.')
         self.print_help()
 
     def print_help(self):
-        self.get_logger().info('Controles (simulación RViz):')
+        self.get_logger().info('========================================')
+        self.get_logger().info('Controles (simulación Gazebo/RViz):')
         self.get_logger().info('  A/D : base bracket_joint')
         self.get_logger().info('  W/S : hombro humerus_low_joint')
         self.get_logger().info('  R/F : codo forearm_low_joint')
@@ -64,13 +64,20 @@ class ArmKeyboardTeleop(Node):
         self.get_logger().info('  Y/H : muñeca roll (endeffector_joint)')
         self.get_logger().info('  ESPACIO : reset posiciones a 0')
         self.get_logger().info('  Ctrl+C (en esta terminal) : salir')
+        self.get_logger().info('========================================')
 
     def timer_cb(self):
-        """Publicar el JointState actual."""
-        msg = JointState()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.name = self.joint_names
-        msg.position = [self.positions[n] for n in self.joint_names]
+        """Publicar el JointTrajectory actual."""
+        msg = JointTrajectory()
+        msg.joint_names = self.joint_names
+        
+        point = JointTrajectoryPoint()
+        point.positions = [self.positions[n] for n in self.joint_names]
+        # Tiempo para que el movimiento sea fluido en el simulador
+        point.time_from_start.sec = 0
+        point.time_from_start.nanosec = 50000000 
+        
+        msg.points.append(point)
         self.pub.publish(msg)
 
     # ------------------ Entrada por teclado ------------------ #
@@ -128,10 +135,10 @@ class ArmKeyboardTeleop(Node):
 
         lim = {
             'bracket_joint': (-limit_80deg, limit_80deg),
-            'humerus_low_joint': (-1.5, 1.5),          # puedes ajustar luego si quieres
-            'forearm_low_joint': (-1.5, 1.5),          # idem
-            'ubracket_joint': (-limit_80deg, limit_80deg),  # muñeca pitch
-            'endeffector_joint': (-4.5, 4.5),          # muñeca roll, de momento amplio
+            'humerus_low_joint': (-1.5, 0.0),          # Ojo: ajusté a tus límites del xacro
+            'forearm_low_joint': (-1.216, 0.0),          # Ojo: ajusté a tus límites del xacro
+            'ubracket_joint': (-0.785, 0.785),  # muñeca pitch
+            'endeffector_joint': (-3.1416, 3.1416),          # muñeca roll
         }
         for n, (mn, mx) in lim.items():
             v = self.positions[n]
@@ -145,7 +152,6 @@ class ArmKeyboardTeleop(Node):
         self._stop = True
         return super().destroy_node()
 
-
 def main(args=None):
     rclpy.init(args=args)
     node = ArmKeyboardTeleop()
@@ -158,7 +164,6 @@ def main(args=None):
         node.get_logger().info('Saliendo de teleop...')
         node.destroy_node()
         rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()
