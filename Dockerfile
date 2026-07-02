@@ -16,15 +16,12 @@ RUN apt-get update && \
         ros-humble-tf2-tools \
         ros-humble-tf2-ros \
         ros-humble-tf2-msgs \
-<<<<<<< HEAD
         ros-humble-cv-bridge \
         ros-humble-image-transport \
         v4l-utils \
         usbutils \
-=======
         ros2-testing-apt-source \
         ros-humble-depthai-ros-v3 \
->>>>>>> aca6240dcccd239f64e0eda5956024c30cad9b6e
         && rm -rf /var/lib/apt/lists/*
 
 # Source ROS automatically
