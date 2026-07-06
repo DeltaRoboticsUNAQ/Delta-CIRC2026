@@ -22,6 +22,21 @@ Este workspace contiene una migración **enfocada únicamente en el chasis** del
 - `circ_rover_description`: URDF/meshes del rover (reutilizado de `rover_simple_v1_2`).
 - `circ_chassis_teleop`: teleoperación con joystick (`joy` + `teleop_twist_joy`) publicando a `/cmd_vel_teleop`.
 
+## Dependencias externas para replicar el ws
+
+Si vas a montar este workspace en otra máquina, aparte de ROS2 Humble base, estas son las dependencias extra que aparecen en el código y los launch:
+
+- ROS 2 y navegación: launch, launch_ros, ament_index_python, rclpy, rclcpp, std_msgs, sensor_msgs, geometry_msgs, nav_msgs, std_srvs, tf2, tf2_ros, tf2_geometry_msgs, robot_localization, nav2_common, nav2_controller, nav2_planner, nav2_behaviors, nav2_bt_navigator, nav2_waypoint_follower, nav2_lifecycle_manager, nmea_navsat_driver.
+- Hardware y teleoperación: joy, teleop_twist_joy, teleop_twist_keyboard, robot_state_publisher, joint_state_publisher_gui, rviz2, v4l2_camera.
+- Visión y cámaras: cv_bridge, depthai_ros_driver, depthimage_to_laserscan, rosbridge_suite, web_video_server.
+- Python y sistema: python3-serial, python3-opencv, jetson-stats (jtop).
+- Diagnóstico y telemetría: diagnostic_msgs.
+- Si quieres reproducir también los componentes fuente incluidos en este ws, no son paquetes de apt sino repos completos dentro de src: eProsima/Micro-XRCE-DDS-Client, micro_ros_setup, ros2/common_interfaces y uros.
+
+La forma más cómoda de instalar la parte ROS en una máquina nueva es usar rosdep después de clonar el workspace:
+
+rosdep install --from-paths src --ignore-src -r -y
+
 
 ## Quickstart (sin hardware, prueba inmediata)
 
