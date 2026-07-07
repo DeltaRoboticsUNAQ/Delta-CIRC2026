@@ -1,0 +1,92 @@
+### ekf_local.yaml
+#
+#  EKF LOCAL — robot_localization
+#  Fusiona odometría de ruedas (encoders) + IMU (BNO085 Game RV + giroscopio)
+#  Publica una odometría CONTINUA y suave en el frame `odom`:
+#
+#         odom  ->  base_link   (TF que este nodo emite)
+#
+#  Este filtro trabaja en el frame `odom`, con yaw RELATIVO.
+#  NO necesita norte absoluto, así que funciona desde el primer arranque
+#  sin resolver todavía el problema del heading GPS.
+#
+#  El EKF global (map -> odom) vendrá después y se apoya en este.
+#
+#  >>> CONFIRMA estos dos topics antes de lanzar <<<
+#    odom0 = topic de odometría de ruedas (nav_msgs/Odometry) del 2.º STM32
+#    imu0  = /imu/data_raw  (sensor_msgs/Imu del stm32_imu_bridge.py)
+#  Si aún no publicas Odometry desde los encoders, ese es el verdadero
+#  siguiente bloqueo: el EKF local necesita esa entrada de velocidad.
+
+ekf_local:
+  ros__parameters:
+
+    frequency: 30.0
+    sensor_timeout: 0.2
+    two_d_mode: true          # rover terrestre: aplana z/roll/pitch en la
+                              # localización (la inclinación la maneja tu
+                              # controlador de seguridad por separado vía IMU)
+
+    publish_tf: true
+    print_diagnostics: true
+
+    # --- Frames ---
+    map_frame:       map
+    odom_frame:      odom
+    base_link_frame: base_link
+    world_frame:     odom        # <-- LOCAL: el mundo de este filtro es `odom`
+
+    # =========================================================
+    #  odom0 : ODOMETRÍA DE RUEDAS (encoders, 2.º STM32)
+    #  Aporta la velocidad lineal de avance. Es la fuente que
+    #  da continuidad cuando el GPS aún no corrige.
+    # =========================================================
+    odom0: /wheel/odometry          # <<< CONFIRMA este topic
+    odom0_config: [false, false, false,    # x,  y,  z
+                   false, false, false,    # roll, pitch, yaw
+                   true,  false, false,    # vx,  vy, vz   <- SOLO avance
+                   false, false, false,    # vroll, vpitch, vyaw  <- NO (patina)
+                   false, false, false]    # ax, ay, az
+                   # En skid-steer las ruedas no dan rumbo confiable: el yaw y
+                   # vyaw los aporta SOLO el giroscopio del BNO085 (imu0).
+    odom0_differential: false
+    odom0_relative: false
+    odom0_queue_size: 10
+
+    # =========================================================
+    #  imu0 : BNO085 vía stm32_imu_bridge.py
+    #  Aporta el yaw (relativo, Game RV) + velocidad angular del
+    #  giroscopio + aceleración. En frame `odom` el yaw relativo
+    #  es perfectamente válido.
+    # =========================================================
+    imu0: /imu/data_raw             # mismo topic que consume el UnifiedSafetyController
+    imu0_config: [false, false, false,    # x,  y,  z
+                  false, false, true,     # roll, pitch, YAW
+                  false, false, false,    # vx, vy, vz
+                  false, false, true,     # vroll, vpitch, VYAW (giroscopio)
+                  false, false, false]    # ax, ay, az  <- NO fusionar accel:
+                  # el acelerómetro del BNO085 tiene sesgo y mete deriva. El
+                  # avance (vx) lo dará la odometría de ruedas; el IMU solo
+                  # aporta el rumbo (yaw + vyaw). Esto elimina el runaway.
+    imu0_differential: false
+    imu0_relative: true             # arranca el yaw del IMU en 0 al inicio
+    imu0_queue_size: 10
+    imu0_remove_gravitational_acceleration: true
+
+    # Covarianza inicial del proceso (valores estándar de r_l, ajustables)
+    # OJO: ROS2 exige que TODOS los elementos sean float -> ceros como 0.0
+    process_noise_covariance: [0.05, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.05, 0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.06, 0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.03, 0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.03, 0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.06, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.025, 0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.025, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.04, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.01, 0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.01, 0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.02, 0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.015]

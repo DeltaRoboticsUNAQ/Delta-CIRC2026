@@ -7,9 +7,12 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+
+install(PROGRAMS
+  circ_rover_telemetry/jetson_diag_bridge.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME jetson_diag_bridge
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

@@ -1,0 +1,85 @@
+### ekf_global.yaml  ──  circ_rover_navigation/config
+#
+#  EKF GLOBAL — robot_localization
+#  Fusiona odometría de ruedas + IMU + GPS (vía navsat_transform).
+#  Publica la pose ANCLADA AL MUNDO y el TF:
+#
+#         map  ->  odom
+#
+#  Junto con el ekf_local (odom -> base_link) forman el árbol completo:
+#         map -> odom -> base_link
+#
+#  La diferencia con el local: aquí world_frame = map, y se añade el GPS
+#  (odom1 = /odometry/gps) como fuente de posición absoluta.
+
+ekf_global:
+  ros__parameters:
+
+    frequency: 30.0
+    sensor_timeout: 0.2
+    two_d_mode: true
+
+    publish_tf: true
+    print_diagnostics: true
+
+    # --- Frames ---
+    map_frame:       map
+    odom_frame:      odom
+    base_link_frame: base_link
+    world_frame:     map          # <-- GLOBAL: el mundo de este filtro es `map`
+
+    # =========================================================
+    #  odom0 : ODOMETRÍA DE RUEDAS  (solo avance, igual que el local)
+    # =========================================================
+    odom0: /wheel/odometry
+    odom0_config: [false, false, false,
+                   false, false, false,
+                   true,  false, false,    # solo vx
+                   false, false, false,
+                   false, false, false]
+    odom0_differential: false
+    odom0_relative: false
+    odom0_queue_size: 10
+
+    # =========================================================
+    #  imu0 : BNO085  (rumbo: yaw + velocidad angular)
+    # =========================================================
+    imu0: /imu/data_raw
+    imu0_config: [false, false, false,
+                  false, false, true,     # yaw
+                  false, false, false,
+                  false, false, true,     # vyaw
+                  false, false, false]
+    imu0_differential: false
+    imu0_relative: true
+    imu0_queue_size: 10
+
+    # =========================================================
+    #  odom1 : GPS  (posición absoluta x,y desde navsat_transform)
+    #  Esto es lo que ancla el filtro al mundo real.
+    # =========================================================
+    odom1: /odometry/gps
+    odom1_config: [true,  true,  false,    # x, y absolutos
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    odom1_differential: false
+    odom1_relative: false
+    odom1_queue_size: 10
+
+    process_noise_covariance: [0.05, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.05, 0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.06, 0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.03, 0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.03, 0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.06, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.025, 0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.025, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.04, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.01, 0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.01, 0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.02, 0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.015]

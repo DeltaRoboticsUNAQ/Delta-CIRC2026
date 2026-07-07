@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estación de Control · Rover (ROS 2)</title>
+<style>
+/* =========================================================================
+   Rover UI · Estación de control
+   Hoja de estilos principal
+   ========================================================================= */
+
+:root{
+  --bg:#0a0e14;
+  --bg-grad:#0c1019;
+  --surface:#0f141d;
+  --surface-2:#121825;
+  --line:#1b2433;
+  --line-soft:#161d29;
+  --txt:#e7ecf4;
+  --txt-dim:#8a97ab;
+  --txt-mute:#56627a;
+  --purple:#b66bff;
+  --purple-deep:#8a3ffb;
+  --cyan:#28e0e6;
+  --green:#3ee0a0;
+  --amber:#ffc24b;
+  --red:#ff4d6d;
+  --blue:#5b8cff;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(138,63,251,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(40,224,230,.06), transparent 55%),
+    var(--bg);
+  color:var(--txt);
+  font-family:var(--sans);
+  font-size:14px;
+  overflow:hidden;
+  user-select:none;
+}
+.app{height:100vh;display:flex;flex-direction:column}
+
+/* ---------- BARRA SUPERIOR ---------- */
+.topbar{
+  height:52px;flex:0 0 52px;
+  display:flex;align-items:center;gap:18px;
+  padding:0 16px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#0d121c,#0a0e14);
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.4px}
+.brand .logo{display:flex;align-items:center;justify-content:center;width:26px;height:26px}
+.brand .logo svg{display:block}
+.brand .name{color:var(--purple);font-size:14px;text-shadow:0 0 14px rgba(182,107,255,.30)}
+.brand .name small{display:block;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:1.2px;
+  color:var(--txt-mute);text-transform:uppercase;text-shadow:none;margin-top:1px}
+.conn{display:flex;align-items:center;gap:7px;color:var(--txt-dim);font-family:var(--mono);font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.dot.pulse{animation:pulse 1.8s ease-in-out infinite}
+.dot.bad{background:var(--red);box-shadow:0 0 8px var(--red)}
+.dot.warn{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+.switch{margin-left:8px;display:flex;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px}
+.switch button{
+  font-family:var(--sans);font-size:12.5px;font-weight:600;letter-spacing:.2px;
+  color:var(--txt-dim);background:transparent;border:0;cursor:pointer;
+  padding:6px 14px;border-radius:6px;display:flex;align-items:center;gap:7px;transition:.15s;
+}
+.switch button .num{font-family:var(--mono);font-size:10px;color:var(--txt-mute)}
+.switch button.active{background:linear-gradient(180deg,#1a2333,#141b28);color:var(--txt);box-shadow:inset 0 0 0 1px var(--line)}
+.switch button.active .num{color:var(--cyan)}
+.switch button:hover:not(.active){color:var(--txt)}
+
+.top-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.stat-chip{font-family:var(--mono);font-size:12px;color:var(--txt-dim);display:flex;align-items:center;gap:7px}
+.stat-chip b{color:var(--txt);font-weight:600}
+.estop{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(180deg,#2a0c14,#1c0810);
+  color:var(--red);border:1px solid #5e1626;
+  font-weight:800;letter-spacing:1.5px;font-size:12px;
+  padding:8px 16px;border-radius:8px;cursor:pointer;
+  box-shadow:0 0 0 1px rgba(255,77,109,.08),0 0 18px rgba(255,77,109,.12);
+  transition:.15s;
+}
+.estop:hover{background:linear-gradient(180deg,#3a0f1c,#250a14);box-shadow:0 0 22px rgba(255,77,109,.35)}
+.estop .bolt{font-size:13px}
+
+/* ---------- BARRA DE CONTROL ---------- */
+.controlbar{
+  height:46px;flex:0 0 46px;display:flex;align-items:center;gap:26px;
+  padding:0 16px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#0b0f18,#090d14);
+}
+.ctrl-group{display:flex;align-items:center;gap:11px}
+.ctrl-label{font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt-mute)}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px;gap:2px}
+.seg button{
+  font-family:var(--sans);font-size:12px;font-weight:600;color:var(--txt-dim);
+  background:transparent;border:0;cursor:pointer;padding:6px 13px;border-radius:5px;transition:.13s;
+}
+.seg button:hover:not(.on){color:var(--txt)}
+.seg.mode button.on{background:linear-gradient(180deg,#291640,#1c1130);color:var(--purple);box-shadow:inset 0 0 0 1px rgba(182,107,255,.45)}
+.seg.armc button.on{background:linear-gradient(180deg,#0f322a,#0b2620);color:var(--green);box-shadow:inset 0 0 0 1px rgba(62,224,160,.45)}
+.ctrl-spacer{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--txt-mute)}
+.ctrl-spacer b{color:var(--purple);font-weight:700}
+
+/* botón de cabecera */
+.hbtn{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.5px;
+  color:var(--txt-dim);background:var(--surface-2);border:1px solid var(--line);
+  border-radius:6px;padding:4px 9px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.13s}
+.hbtn:hover{color:var(--txt);border-color:var(--txt-mute)}
+.hbtn .led{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+.hbtn.off{color:var(--txt-mute)}
+.hbtn.off .led{background:var(--txt-mute);box-shadow:none}
+
+.cloud-off{position:absolute;inset:0;top:35px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:13px;
+  background:repeating-linear-gradient(45deg,#0b0f17,#0b0f17 11px,#0d121b 11px,#0d121b 22px);color:var(--txt-mute);z-index:2}
+.cloud-off.show{display:flex}
+.cloud-off .ico{font-size:28px;opacity:.55}
+.cloud-off .msg{font-size:12px}
+.cloud-off button{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--green);
+  background:rgba(62,224,160,.08);border:1px solid rgba(62,224,160,.35);border-radius:7px;padding:7px 15px;cursor:pointer}
+.cloud-off button:hover{background:rgba(62,224,160,.16)}
+
+/* tarjeta de navegación / destino */
+.navcard{position:absolute;left:12px;top:46px;z-index:4;
+  background:rgba(8,11,17,.82);border:1px solid var(--line);border-radius:11px;padding:11px 13px;backdrop-filter:blur(6px);min-width:210px;transition:opacity .2s}
+.navcard .nc-top{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--txt-dim);letter-spacing:.4px;margin-bottom:7px}
+.navcard .nc-top b{color:var(--cyan);font-family:var(--mono)}
+.navcard .nc-coord{font-family:var(--mono);font-size:14px;color:var(--txt);font-weight:700}
+.navcard .nc-meta{font-family:var(--mono);font-size:11px;color:var(--txt-dim);margin-top:4px}
+.navcard .nc-status{margin-top:10px;display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;
+  padding:5px 11px;border-radius:7px;font-family:var(--mono)}
+.nc-status.enroute{color:var(--cyan);background:rgba(40,224,230,.1);border:1px solid rgba(40,224,230,.32)}
+.nc-status.arrived{color:var(--green);background:rgba(62,224,160,.12);border:1px solid rgba(62,224,160,.36)}
+.nc-status.starting{color:var(--amber);background:rgba(255,194,75,.12);border:1px solid rgba(255,194,75,.36)}
+.nc-status.cancelled{color:var(--red);background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.34)}
+.nc-status .sd{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 7px currentColor}
+
+/* ---------- CONTENEDOR DE MONITORES ---------- */
+.screen{flex:1;display:none;min-height:0;padding:12px;gap:12px}
+.screen.active{display:flex}
+
+.panel{
+  background:linear-gradient(180deg,var(--surface),#0b0f17);
+  border:1px solid var(--line);border-radius:12px;
+  position:relative;overflow:hidden;
+}
+.panel-head{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 13px;border-bottom:1px solid var(--line-soft);
+  font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt-dim);
+}
+.panel-head .tick{width:3px;height:13px;border-radius:2px;background:var(--purple);box-shadow:0 0 8px var(--purple)}
+.panel-head .tick.cy{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.panel-head .tick.gr{background:var(--green);box-shadow:0 0 8px var(--green)}
+.panel-head .right{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.5px;color:var(--txt-mute)}
+
+/* ===========================================================
+   MONITOR 1 — CÁMARAS
+   =========================================================== */
+#mon-cam{display:none}
+#mon-cam.active{display:grid;grid-template-columns:1fr 360px;grid-template-rows:1fr 250px;gap:12px}
+
+.cam-main{grid-row:1 / 2;grid-column:1 / 2}
+.cam-grid-wrap{grid-row:1 / 3;grid-column:2 / 3}
+.cloud{grid-row:2 / 3;grid-column:1 / 2;display:flex;flex-direction:column}
+
+/* feed principal */
+.feed{position:absolute;inset:0;top:35px}
+.feed canvas,.feed img{width:100%;height:100%;display:block;object-fit:cover}
+.feed-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(91,140,255,.05) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(91,140,255,.05) 1px,transparent 1px);
+  background-size:42px 42px;pointer-events:none}
+.feed-overlay{position:absolute;left:14px;bottom:14px;display:flex;gap:8px;align-items:center}
+.ov-pill{font-family:var(--mono);font-size:11px;color:var(--txt);background:rgba(8,11,17,.72);
+  border:1px solid var(--line);border-radius:6px;padding:4px 9px;backdrop-filter:blur(3px)}
+.ov-pill.cy{color:var(--cyan);border-color:rgba(40,224,230,.3)}
+.rec{position:absolute;right:14px;top:46px;display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:11px;font-weight:700;color:var(--red);
+  background:rgba(8,11,17,.72);border:1px solid rgba(255,77,109,.3);border-radius:6px;padding:4px 9px}
+.rec .rd{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 1.4s infinite}
+.crosshair{position:absolute;left:50%;top:calc(50% + 17px);transform:translate(-50%,-50%);
+  width:46px;height:46px;pointer-events:none;opacity:.5}
+.crosshair::before,.crosshair::after{content:"";position:absolute;background:var(--cyan)}
+.crosshair::before{left:50%;top:0;width:1px;height:100%;transform:translateX(-.5px)}
+.crosshair::after{top:50%;left:0;height:1px;width:100%;transform:translateY(-.5px)}
+
+/* cuadrícula de cámaras */
+.cam-grid{padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;position:absolute;inset:0;top:35px;overflow:auto}
+.thumb{
+  position:relative;border:1px solid var(--line);border-radius:9px;overflow:hidden;cursor:pointer;
+  aspect-ratio:16/10;background:#0b1019;transition:.15s;
+}
+.thumb canvas,.thumb img{width:100%;height:100%;display:block;opacity:.85;object-fit:cover}
+.thumb .tl{position:absolute;left:7px;bottom:6px;font-size:11px;font-weight:600;color:var(--txt);
+  text-shadow:0 1px 4px #000}
+.thumb .badge{position:absolute;right:6px;top:6px;font-family:var(--mono);font-size:9px;color:var(--txt-dim);
+  background:rgba(8,11,17,.7);border-radius:4px;padding:2px 5px}
+.thumb .live{position:absolute;left:7px;top:7px;width:7px;height:7px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 7px var(--green)}
+.thumb:hover{border-color:var(--txt-mute);transform:translateY(-1px)}
+.thumb.active{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 18px rgba(40,224,230,.25)}
+.thumb.active .tl{color:var(--cyan)}
+.thumb.add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  border-style:dashed;border-color:var(--line);background:transparent;color:var(--txt-mute)}
+.thumb.add:hover{border-color:var(--purple);color:var(--purple)}
+.thumb.add .plus{font-size:26px;font-weight:300;line-height:1}
+.thumb.add .lbl{font-size:11px;font-weight:600}
+
+/* nube de puntos */
+.cloud-body{position:absolute;inset:0;top:35px}
+.cloud-body canvas{width:100%;height:100%;display:block}
+.cloud-axes{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:10px;color:var(--txt-mute);line-height:1.5}
+.cloud-axes .x{color:var(--red)} .cloud-axes .y{color:var(--green)} .cloud-axes .z{color:var(--blue)}
+.cloud-meta{position:absolute;right:12px;bottom:12px;font-family:var(--mono);font-size:10px;color:var(--txt-dim);text-align:right;line-height:1.6}
+
+.teleop{position:absolute;top:35px;right:12px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:3}
+
+/* ===========================================================
+   MONITOR 2 — TELEMETRÍA
+   =========================================================== */
+#mon-tel{display:none}
+#mon-tel.active{display:grid;grid-template-columns:1.55fr 1fr 1fr;grid-template-rows:270px 1fr;gap:12px}
+.map{grid-row:1 / 3;grid-column:1 / 2}
+.sensors{grid-row:1 / 3;grid-column:2 / 3}
+.attitude{grid-column:3 / 4;grid-row:1 / 2}
+.ros{grid-column:3 / 4;grid-row:2 / 3}
+
+.map-body{position:absolute;inset:0;top:35px}
+.map-body svg{width:100%;height:100%;display:block}
+
+.sensors-body{position:absolute;inset:0;top:35px;overflow:auto;padding:6px 0}
+.srow{display:flex;align-items:baseline;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--line-soft)}
+.srow:last-child{border-bottom:0}
+.srow .k{color:var(--txt-dim);font-size:13px}
+.srow .v{font-family:var(--mono);font-weight:700;font-size:15px;text-align:right}
+.srow .v small{display:block;font-weight:500;font-size:10px;color:var(--txt-mute);letter-spacing:.3px;margin-top:1px}
+.v.green{color:var(--green)} .v.cyan{color:var(--cyan)} .v.amber{color:var(--amber)}
+.v.red{color:var(--red)} .v.purple{color:var(--purple)} .v.white{color:var(--txt)}
+.bar{height:5px;border-radius:3px;background:#1a2230;margin-top:6px;overflow:hidden}
+.bar > i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),#7ef0c0)}
+.sgroup{padding:10px 14px 4px;font-size:10px;font-weight:700;letter-spacing:1.4px;color:var(--purple);text-transform:uppercase}
+
+.att-body{position:absolute;inset:0;top:35px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 8px 12px}
+.att-body > svg{width:160px;height:160px;flex:0 0 auto}
+.att-read{display:flex;gap:7px;margin-top:10px;width:100%;justify-content:center}
+.att-read .ar{flex:1;max-width:92px;text-align:center;background:rgba(8,11,17,.5);border:1px solid var(--line-soft);border-radius:8px;padding:6px 4px}
+.att-read .ar .arl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--txt-mute)}
+.att-read .ar .arv{font-family:var(--mono);font-size:15px;font-weight:700;margin-top:2px}
+.ar.yaw .arv{color:var(--cyan)} .ar.pitch .arv{color:var(--amber)} .ar.roll .arv{color:var(--purple)}
+
+.ros-body{position:absolute;inset:0;top:35px;padding:6px 0;display:flex;flex-direction:column}
+.node{display:flex;align-items:center;gap:9px;padding:7px 14px;font-family:var(--mono);font-size:12px;color:var(--txt-dim)}
+.node .nd{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.node .nd.ok{background:var(--green);box-shadow:0 0 7px var(--green)}
+.node .nd.warn{background:var(--amber);box-shadow:0 0 7px var(--amber);animation:pulse 1.6s infinite}
+.node .nd.off{background:var(--red);box-shadow:0 0 7px var(--red)}
+.node .nm{color:var(--txt)}
+.node .hz{margin-left:auto;color:var(--txt-mute)}
+.wd{margin-top:auto;padding:11px 14px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:10px;font-size:12px}
+.wd .tag{font-family:var(--mono);font-weight:700;padding:3px 9px;border-radius:6px;font-size:11px}
+.wd .tag.ok{color:var(--green);background:rgba(62,224,160,.1);border:1px solid rgba(62,224,160,.3)}
+.wd .tag.bad{color:var(--red);background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3)}
+.wd .mode{margin-left:auto;font-family:var(--mono);color:var(--cyan)}
+
+/* tarjetas con minigráficos */
+.sparks{position:absolute;right:14px;bottom:14px;display:flex;gap:10px}
+.spark{width:150px;background:rgba(8,11,17,.6);border:1px solid var(--line);border-radius:9px;padding:8px 10px;backdrop-filter:blur(4px)}
+.spark .lab{display:flex;justify-content:space-between;font-size:10px;color:var(--txt-dim);margin-bottom:4px}
+.spark .lab b{font-family:var(--mono);color:var(--txt)}
+.spark svg{width:100%;height:34px;display:block}
+
+/* ---------- TELEOPERACIÓN ---------- */
+.teleop-card{background:rgba(8,11,17,.78);border:1px solid var(--line);border-radius:11px;padding:10px;backdrop-filter:blur(5px)}
+.teleop-title{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--txt-mute);text-align:center;margin-bottom:8px}
+.pad{display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(2,34px);gap:6px;justify-content:center}
+.pad button,.arm{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--txt-dim);
+  background:linear-gradient(180deg,#161d2b,#10151f);border:1px solid var(--line);border-radius:7px;cursor:pointer;transition:.12s}
+.pad button:hover{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px rgba(40,224,230,.2)}
+.pad button:active{transform:translateY(1px)}
+.pad .fwd{grid-column:2;grid-row:1} .pad .left{grid-column:1;grid-row:2}
+.pad .rev{grid-column:2;grid-row:2} .pad .right{grid-column:3;grid-row:2}
+.pad .stop{grid-column:3;grid-row:1;color:var(--red);border-color:#3a1722}
+.pad .stop:hover{box-shadow:0 0 10px rgba(255,77,109,.3)}
+.arm{margin-top:9px;width:100%;padding:9px;letter-spacing:1.5px;color:var(--amber);border-color:#3a3018}
+.arm.armed{color:#0a0e14;background:linear-gradient(180deg,var(--green),#2bbd86);border-color:var(--green)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#141b28;border:1px solid var(--line);color:var(--txt);
+  padding:11px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:50;
+  box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast b{color:var(--purple)}
+
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#1e2736;border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ========== BARRA SUPERIOR ========== -->
+  <div class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="8" width="18" height="9" rx="2" stroke="#b66bff" stroke-width="1.6"/>
+          <circle cx="8" cy="18.5" r="2.2" stroke="#b66bff" stroke-width="1.6"/>
+          <circle cx="16" cy="18.5" r="2.2" stroke="#b66bff" stroke-width="1.6"/>
+          <path d="M12 8V4M12 4l2.5 1.5M12 4 9.5 5.5" stroke="#28e0e6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="name">ESTACIÓN DE CONTROL<small>Plataforma Rover · ROS 2 Humble</small></span>
+    </div>
+    <div class="conn"><span class="dot pulse" id="conn-dot"></span><span id="conn-txt">Inicializando…</span></div>
+
+    <div class="switch">
+      <button id="tab-cam" class="active" onclick="showScreen('cam')"><span class="num">M1</span> Cámaras</button>
+      <button id="tab-tel" onclick="showScreen('tel')"><span class="num">M2</span> Telemetría</button>
+    </div>
+
+    <div class="top-right">
+      <div class="stat-chip">WiFi <b id="t-rssi">— dBm</b></div>
+      <div class="stat-chip"><span class="dot" id="ros2-dot" style="background:var(--txt-mute)"></span>ROS 2</div>
+      <div class="estop" onclick="estop()"><span class="bolt">⏻</span>PARO DE EMERGENCIA</div>
+    </div>
+  </div>
+
+  <!-- ========== BARRA DE CONTROL ========== -->
+  <div class="controlbar">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Modo</span>
+      <div class="seg mode">
+        <button data-m="autonomo" class="on" onclick="setMode('autonomo')">Autónomo</button>
+        <button data-m="asistido" onclick="setMode('asistido')">Asistido</button>
+        <button data-m="manual" onclick="setMode('manual')">Manual</button>
+      </div>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Configuración</span>
+      <div class="seg armc">
+        <button data-arm="0" onclick="setArm(false)">Sin brazo</button>
+        <button data-arm="1" class="on" onclick="setArm(true)">Con brazo</button>
+      </div>
+    </div>
+    <div class="ctrl-spacer">Operación: <b id="ctrl-now">AUTÓNOMO</b> · Sensores: <span id="ctrl-sens" style="color:var(--txt-dim)">IMU · GPS · Nube</span></div>
+  </div>
+
+  <!-- ========== MONITOR 1: CÁMARAS ========== -->
+  <div id="mon-cam" class="screen active">
+
+    <!-- feed principal -->
+    <div class="panel cam-main">
+      <div class="panel-head"><span class="tick cy"></span><span id="main-label">Cámara Frontal · Chasis</span>
+        <span class="right" id="main-source">web_video_server</span></div>
+      <div class="feed">
+        <canvas id="feed-main"></canvas>
+        <div class="feed-grid"></div>
+        <div class="crosshair"></div>
+      </div>
+      <div class="rec"><span class="rd"></span>REC</div>
+      <div class="feed-overlay">
+        <span class="ov-pill cy" id="ov-fps">30 FPS</span>
+        <span class="ov-pill" id="ov-lat">— ms</span>
+        <span class="ov-pill">1920×1080</span>
+        <span class="ov-pill" id="ov-name">CAM_FRONTAL</span>
+      </div>
+    </div>
+
+    <!-- cuadrícula de cámaras -->
+    <div class="panel cam-grid-wrap">
+      <div class="panel-head"><span class="tick"></span>Cámaras<span class="right">tópicos de imagen</span></div>
+      <div class="cam-grid" id="cam-grid"><!-- generada por JS --></div>
+    </div>
+
+    <!-- nube de puntos + teleoperación -->
+    <div class="panel cloud">
+      <div class="panel-head"><span class="tick gr"></span>LiDAR · Nube de puntos
+        <button class="hbtn" id="cloud-btn" onclick="toggleCloud()"><span class="led"></span><span class="txt">Nube ON</span></button>
+      </div>
+      <div class="cloud-body"><canvas id="cloud"></canvas></div>
+      <div class="cloud-off" id="cloud-off">
+        <div class="ico">⏻</div>
+        <div class="msg">Nube de puntos desactivada · ahorrando recursos</div>
+        <button onclick="toggleCloud()">Activar nube</button>
+      </div>
+      <div class="cloud-axes"><span class="x">■</span> X &nbsp; <span class="y">■</span> Y &nbsp; <span class="z">■</span> Z</div>
+      <div class="cloud-meta" id="cloud-meta">~28 400 pts<br>rango 0.2–6.0 m</div>
+      <div class="teleop">
+        <div class="teleop-card">
+          <div class="teleop-title">TELEOPERACIÓN · /cmd_vel</div>
+          <div class="pad">
+            <button class="fwd" onmousedown="cmd('↑ FWD')" onmouseup="cmdStop()" onmouseleave="cmdStop()">↑ FWD</button>
+            <button class="stop" onmousedown="cmd('STOP')">STOP</button>
+            <button class="left" onmousedown="cmd('←')" onmouseup="cmdStop()" onmouseleave="cmdStop()">←</button>
+            <button class="rev" onmousedown="cmd('↓ REV')" onmouseup="cmdStop()" onmouseleave="cmdStop()">↓ REV</button>
+            <button class="right" onmousedown="cmd('→')" onmouseup="cmdStop()" onmouseleave="cmdStop()">→</button>
+          </div>
+          <button class="arm" id="arm-btn" onclick="toggleArm()">ARM</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MONITOR 2: TELEMETRÍA ========== -->
+  <div id="mon-tel" class="screen">
+
+    <!-- mapa -->
+    <div class="panel map">
+      <div class="panel-head"><span class="tick cy"></span>Mapa GPS · Waypoints<span class="right">UTM 14N · EKF global</span></div>
+      <div class="map-body"><svg id="map-svg" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice"></svg></div>
+      <div class="navcard" id="navcard">
+        <div class="nc-top">DESTINO → <b id="nc-wp">WP 3</b></div>
+        <div class="nc-coord" id="nc-coord">20.5934, -100.3871</div>
+        <div class="nc-meta" id="nc-dist">distancia 142 m · rumbo 41°</div>
+        <div class="nc-status enroute" id="nc-status"><span class="sd"></span>En camino</div>
+      </div>
+      <div class="sparks">
+        <div class="spark"><div class="lab">Batería <b id="sp-bat-v">87%</b></div><svg id="sp-bat" viewBox="0 0 150 34"></svg></div>
+        <div class="spark"><div class="lab">Velocidad <b id="sp-vel-v">0.4 m/s</b></div><svg id="sp-vel" viewBox="0 0 150 34"></svg></div>
+        <div class="spark"><div class="lab">Latencia <b id="sp-lat-v">18 ms</b></div><svg id="sp-lat" viewBox="0 0 150 34"></svg></div>
+      </div>
+    </div>
+
+    <!-- sensores -->
+    <div class="panel sensors">
+      <div class="panel-head"><span class="tick"></span>Sensores</div>
+      <div class="sensors-body">
+        <div class="sgroup">Energía</div>
+        <div class="srow"><span class="k">Batería</span><span class="v green" id="s-bat">87%
+          <small id="s-bat-sub">24.8 V · 4.2 A · ~1h 20m</small></span></div>
+        <div style="padding:0 14px 8px"><div class="bar"><i id="bat-bar" style="width:87%"></i></div></div>
+
+        <div class="sgroup">Movimiento</div>
+        <div class="srow"><span class="k">Velocidad</span><span class="v white" id="s-vel">0.4 m/s</span></div>
+        <div class="srow"><span class="k">Yaw</span><span class="v cyan" id="s-yaw">34°</span></div>
+        <div class="srow"><span class="k">Pitch</span><span class="v amber" id="s-pitch">12°</span></div>
+        <div class="srow"><span class="k">Roll</span><span class="v cyan" id="s-roll">5°</span></div>
+
+        <div class="sgroup">Navegación</div>
+        <div class="srow"><span class="k">GPS</span><span class="v green" id="s-gps">Fix 3D
+          <small>12 sat · HDOP 0.8</small></span></div>
+        <div class="srow"><span class="k">Posición</span><span class="v white" style="font-size:12px" id="s-pos">20.5921, -100.3899</span></div>
+
+        <div class="sgroup">Sistema · Jetson</div>
+        <div class="srow"><span class="k">Temp CPU</span><span class="v amber" id="s-cpu">58 °C</span></div>
+        <div class="srow"><span class="k">Temp GPU</span><span class="v amber" id="s-gpu">61 °C</span></div>
+        <div class="srow"><span class="k">RSSI WiFi</span><span class="v cyan" id="s-rssi">— dBm</span></div>
+        <div class="srow"><span class="k">Latencia</span><span class="v green" id="s-lat">18 ms</span></div>
+      </div>
+    </div>
+
+    <!-- actitud -->
+    <div class="panel attitude">
+      <div class="panel-head"><span class="tick"></span>Actitud · IMU BNO085<span class="right">SPI · 100 Hz</span></div>
+      <div class="att-body">
+        <svg viewBox="0 0 220 220">
+          <defs>
+            <clipPath id="att-clip"><circle cx="110" cy="110" r="78"/></clipPath>
+          </defs>
+          <g clip-path="url(#att-clip)">
+            <g id="horizon">
+              <rect x="-120" y="-120" width="460" height="230" fill="#1c4a7a"/>
+              <rect x="-120" y="110" width="460" height="230" fill="#5a3a1c"/>
+              <line x1="-120" y1="110" x2="340" y2="110" stroke="#e7ecf4" stroke-width="2"/>
+              <g stroke="#cfd8e6" stroke-width="1.4">
+                <line x1="80" y1="80" x2="140" y2="80"/><line x1="92" y1="140" x2="128" y2="140"/>
+                <line x1="92" y1="50" x2="128" y2="50"/><line x1="80" y1="170" x2="140" y2="170"/>
+              </g>
+            </g>
+          </g>
+          <circle cx="110" cy="110" r="78" fill="none" stroke="var(--line)" stroke-width="2"/>
+          <circle cx="110" cy="110" r="78" fill="none" stroke="var(--cyan)" stroke-width="1" opacity=".4"/>
+          <g stroke="var(--amber)" stroke-width="3" fill="none">
+            <line x1="78" y1="110" x2="98" y2="110"/><line x1="122" y1="110" x2="142" y2="110"/>
+            <circle cx="110" cy="110" r="3" fill="var(--amber)" stroke="none"/>
+          </g>
+          <polygon points="110,28 105,38 115,38" fill="var(--cyan)"/>
+        </svg>
+        <div class="att-read">
+          <div class="ar yaw"><div class="arl">Yaw</div><div class="arv" id="a-yaw">34°</div></div>
+          <div class="ar pitch"><div class="arl">Pitch</div><div class="arv" id="a-pitch">12°</div></div>
+          <div class="ar roll"><div class="arl">Roll</div><div class="arv" id="a-roll">5°</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- estado de ROS 2 -->
+    <div class="panel ros">
+      <div class="panel-head"><span class="tick gr"></span>Estado ROS 2</div>
+      <div class="ros-body">
+        <div class="node" data-node="imu_bridge"><span class="nd off"></span><span class="nm">imu_bridge</span><span class="hz">—</span></div>
+        <div class="node" data-node="safety_controller"><span class="nd off"></span><span class="nm">safety_controller</span><span class="hz">—</span></div>
+        <div class="node" data-node="ekf_local"><span class="nd off"></span><span class="nm">ekf_local</span><span class="hz">—</span></div>
+        <div class="node" data-node="ekf_global"><span class="nd off"></span><span class="nm">ekf_global</span><span class="hz">—</span></div>
+        <div class="node" data-node="gps_node"><span class="nd off"></span><span class="nm">gps_node</span><span class="hz">—</span></div>
+        <div class="node" data-node="pointcloud_proc"><span class="nd off"></span><span class="nm">pointcloud_proc</span><span class="hz">—</span></div>
+        <div class="wd">
+          <span style="color:var(--txt-dim)">Watchdog</span>
+          <span class="tag bad" id="wd-tag">SIM</span>
+          <span class="mode" id="wd-mode">Modo: SIMULACIÓN</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- roslibjs (rosbridge_suite). Si no carga, la interfaz sigue en simulación. -->
+<script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+<script>
+/* =========================================================================
+   Rover UI · Configuración
+   -------------------------------------------------------------------------
+   Parámetros de conexión y mapeo de tópicos/servicios de ROS 2 Humble.
+   Puede sobrescribirse por cadena de consulta, p. ej.:
+     index.html?ros=ws://192.168.1.42:9090&video=http://192.168.1.42:8080
+   ========================================================================= */
+(function () {
+  const qs = new URLSearchParams(location.search);
+  const host = location.hostname || 'localhost';
+
+  window.ROVER_CONFIG = {
+    /* WebSocket de rosbridge_server (rosbridge_suite) */
+    rosbridgeUrl: qs.get('ros') || `ws://${host}:9090`,
+
+    /* Base HTTP de web_video_server para los flujos MJPEG de cámara */
+    videoBase: qs.get('video') || `http://${host}:8080`,
+
+    /* Reintento de reconexión (ms) */
+    reconnectMs: 3000,
+
+    /* Tópicos suscritos (entrada hacia la interfaz) */
+    topics: {
+      // BNO085 (Game Rotation Vector) publicado por stm32_imu_bridge.
+      // OJO: ese bridge usa QoS BEST_EFFORT (ver nota de QoS más abajo).
+      imu:          { name: '/imu/data_raw',      type: 'sensor_msgs/msg/Imu' },
+      // nmea_navsat_driver publica NavSatFix en /fix por defecto.
+      gps:          { name: '/fix',               type: 'sensor_msgs/msg/NavSatFix' },
+      // Velocidad "real" = salida del EKF local (robot_localization).
+      odom:         { name: '/odometry/filtered', type: 'nav_msgs/msg/Odometry' },
+      // Aún NO existe en el stack -> el panel de batería queda en simulación
+      // hasta que publiques un BatteryState (ver battery_pub.py opcional).
+      battery:      { name: '/battery_state',     type: 'sensor_msgs/msg/BatteryState' },
+      // Aún NO existe -> CPU/GPU/temp quedan en simulación hasta tener un
+      // jetson_stats -> /diagnostics bridge en la Jetson.
+      diagnostics:  { name: '/diagnostics',       type: 'diagnostic_msgs/msg/DiagnosticArray' },
+      // OAK-D Lite como LiDAR: depthimage_to_laserscan publica LaserScan.
+      // Es lo que alimenta el visor de "nube"/LiDAR del Monitor 1.
+      scan:         { name: '/scan',              type: 'sensor_msgs/msg/LaserScan' },
+    },
+
+    /* Publicadores (salida desde la interfaz) */
+    publishers: {
+      cmdVel:    { name: '/cmd_vel',         type: 'geometry_msgs/msg/Twist' },
+      estop:     { name: '/emergency_stop',  type: 'std_msgs/msg/Bool' },
+      mode:      { name: '/operation_mode',  type: 'std_msgs/msg/String' },
+      arm:       { name: '/arm_enable',      type: 'std_msgs/msg/Bool' },
+    },
+
+    /* Límites de teleoperación */
+    teleop: {
+      linear:  0.5,   // m/s
+      angular: 0.8,   // rad/s
+    },
+
+    /* Nodos esperados en el grafo de ROS 2 (para el panel de estado).
+       Se marcan como activos cuando aparecen en /rosapi/nodes. */
+    expectedNodes: [
+      'stm32_imu_bridge', 'wheel_bridge_left', 'wheel_bridge_right',
+      'skid_steer_base', 'ekf_local', 'ekf_global',
+      'navsat_transform_node', 'nmea_navsat_driver', 'UnifiedSafetyController',
+    ],
+
+    /* Cámaras (6). Operación REMOTA: el navegador solo habla con la Jetson,
+       así que TODAS las cámaras se sirven por web_video_server desde un tópico
+       de imagen en la Jetson (kind:'ros'). Las IP entran a ROS con ip_camera_node
+       (RTSP o MJPEG) y la USB con v4l2_camera. */
+    cameras: [
+      // OAK-D Lite RGB (depthai_ros_driver):
+      { name: 'OAK-D',  sub: 'Frontal',      hue: 200, kind: 'ros', topic: '/oak/rgb/image_raw', active: true },
+      // 4 IP -> republicadas por ip_camera_node en la Jetson:
+      { name: 'IP-1',   sub: 'Lateral Izq',  hue: 280, kind: 'ros', topic: '/ipcam_1/image_raw' },
+      { name: 'IP-2',   sub: 'Lateral Der',  hue: 30,  kind: 'ros', topic: '/ipcam_2/image_raw' },
+      { name: 'IP-3',   sub: 'Trasera',      hue: 150, kind: 'ros', topic: '/ipcam_3/image_raw' },
+      { name: 'IP-4',   sub: 'Cenital',      hue: 50,  kind: 'ros', topic: '/ipcam_4/image_raw' },
+      // Cámara USB (v4l2_camera):
+      { name: 'USB',    sub: 'End-effector', hue: 330, kind: 'ros', topic: '/usb_cam/image_raw' },
+    ],
+  };
+})();
+
+</script>
+<script>
+/* =========================================================================
+   Rover UI · Lógica de interfaz y simulación
+   -------------------------------------------------------------------------
+   Renderiza la interfaz y, mientras no haya datos en vivo desde ROS 2,
+   alimenta los indicadores con una simulación. El módulo ros.js inyecta
+   datos reales a través de la API window.RoverUI.live.*
+   ========================================================================= */
+(function () {
+  const CFG = window.ROVER_CONFIG;
+  const CAMS = CFG.cameras;
+
+  /* ---- utilidades ---- */
+  function set(id, v) {
+    const e = document.getElementById(id);
+    if (!e) return;
+    if (e.firstChild && e.firstChild.nodeType === 3) e.firstChild.nodeValue = v;
+    else e.textContent = v;
+  }
+
+  /* Fuentes en vivo: cuando una fuente está activa, no se escribe nada
+     inventado en esos campos. Con SIM=false la UI NUNCA simula: si falta una
+     fuente real, el panel muestra "—" / "SIN DATOS" en vez de valores falsos. */
+  const SIM = false;
+  const live = { battery: false, motion: false, attitude: false, gps: false, system: false, scan: false };
+
+  /* ---------- cambio de monitor ---------- */
+  window.showScreen = function (s) {
+    document.getElementById('mon-cam').classList.toggle('active', s === 'cam');
+    document.getElementById('mon-tel').classList.toggle('active', s === 'tel');
+    document.getElementById('tab-cam').classList.toggle('active', s === 'cam');
+    document.getElementById('tab-tel').classList.toggle('active', s === 'tel');
+  };
+
+  /* ---------- avisos (toast) ---------- */
+  let toastT;
+  function toast(html) {
+    const el = document.getElementById('toast');
+    el.innerHTML = html;
+    el.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => el.classList.remove('show'), 1900);
+  }
+  window.toast = toast;
+
+  /* ---------- teleoperación ---------- */
+  function bridge() { return window.RoverBridge || null; }
+  window.cmd = function (c) {
+    const b = bridge();
+    if (b && b.cmdVel) b.cmdVel(c);
+    toast('Comando <b>' + c + '</b> → ' + CFG.publishers.cmdVel.name);
+  };
+  window.cmdStop = function () {
+    const b = bridge();
+    if (b && b.cmdVel) b.cmdVel('STOP');
+  };
+  window.toggleArm = function () {
+    const btn = document.getElementById('arm-btn');
+    const on = btn.classList.toggle('armed');
+    btn.textContent = on ? 'ARMADO' : 'ARM';
+    const b = bridge();
+    if (b && b.arm) b.arm(on);
+    toast(on ? 'Sistema <b>armado</b> · tracción habilitada' : 'Sistema <b>desarmado</b>');
+  };
+  window.estop = function () {
+    const b = bridge();
+    if (b && b.estop) b.estop();
+    toast('<b style="color:var(--red)">Parada de emergencia</b> · ' + CFG.publishers.cmdVel.name + ' = 0');
+  };
+
+  /* ---------- modo de operación y configuración del brazo ---------- */
+  let opMode = 'autonomo', hasArm = true;
+  window.setMode = function (m) {
+    opMode = m;
+    document.querySelectorAll('.seg.mode button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+    const names = { autonomo: 'AUTÓNOMO', asistido: 'ASISTIDO', manual: 'MANUAL' };
+    const sens = { autonomo: 'IMU · GPS · Nube', asistido: 'IMU · Nube', manual: 'Ninguno' };
+    set('ctrl-now', names[m]);
+    set('ctrl-sens', sens[m]);
+    document.getElementById('navcard').style.opacity = '1';
+
+    const b = bridge();
+    if (b && b.mode) b.mode(m);
+
+    if (m === 'autonomo') {
+      if (navState === 'cancelled') { navIdx = 0; navDist = NAV[0].dist; navState = 'enroute'; navTimer = 0; }
+      toast('Modo <b>autónomo</b> · navegación por ruta con IMU + GPS + nube de puntos');
+    } else if (m === 'asistido') {
+      navState = 'cancelled'; renderCancelled();
+      toast('Modo <b>asistido</b> · IMU + nube · ruta cancelada');
+    } else {
+      navState = 'cancelled'; renderCancelled();
+      toast('Modo <b>manual</b> · sin asistencia de sensores · ruta cancelada');
+    }
+  };
+  function renderCancelled() {
+    set('nc-wp', '—');
+    set('nc-coord', 'Sin destino asignado');
+    set('nc-dist', 'Ruta cancelada por el operador');
+    const st = document.getElementById('nc-status');
+    st.className = 'nc-status cancelled';
+    st.innerHTML = '<span class="sd"></span>Ruta cancelada';
+  }
+  window.setArm = function (on) {
+    hasArm = on;
+    document.querySelectorAll('.seg.armc button').forEach(b => b.classList.toggle('on', (b.dataset.arm === '1') === on));
+    const i = CAMS.findIndex(c => c.sub === 'End-effector');
+    if (i < 0) return;
+    const thumb = document.querySelector('.thumb[data-i="' + i + '"]');
+    if (thumb) thumb.style.display = on ? '' : 'none';
+    if (!on && CAMS[i] && CAMS[i].active) selectCam(0);
+    toast(on ? 'Configuración: <b>con brazo</b>'
+             : 'Configuración: <b>sin brazo</b> · cámara del end-effector oculta');
+  };
+
+  /* ---------- conmutador de nube de puntos ---------- */
+  let cloudOn = true;
+  window.toggleCloud = function () {
+    cloudOn = !cloudOn;
+    document.getElementById('cloud-off').classList.toggle('show', !cloudOn);
+    document.getElementById('cloud-meta').style.display = cloudOn ? '' : 'none';
+    const btn = document.getElementById('cloud-btn');
+    btn.classList.toggle('off', !cloudOn);
+    btn.querySelector('.txt').textContent = cloudOn ? 'Nube ON' : 'Nube OFF';
+    toast(cloudOn ? 'Nube de puntos <b>activada</b>'
+                  : 'Nube de puntos <b>desactivada</b> · ahorro de recursos');
+  };
+
+  /* ---------- máquina de estados de navegación ---------- */
+  const NAV = [
+    { wp: 3, coord: '20.5934, -100.3871', dist: 142, bearing: 41 },
+    { wp: 4, coord: '20.5951, -100.3852', dist: 96,  bearing: 58 },
+    { wp: 5, coord: '20.5969, -100.3838', dist: 118, bearing: 33 },
+  ];
+  let navIdx = 0, navDist = NAV[0].dist, navState = 'enroute', navTimer = 0;
+  function navTick() {
+    if (navState === 'cancelled') return;
+    const cur = NAV[navIdx];
+    const st = document.getElementById('nc-status');
+    const dEl = document.getElementById('nc-dist');
+    set('nc-wp', 'WP ' + cur.wp);
+    set('nc-coord', cur.coord);
+    if (navState === 'enroute') {
+      navDist -= Math.random() * 7 + 3;
+      if (navDist <= 0) { navDist = 0; navState = 'arrived'; navTimer = 0; }
+      dEl.textContent = 'Distancia ' + Math.round(Math.max(0, navDist)) + ' m · rumbo ' + cur.bearing + '°';
+      st.className = 'nc-status enroute'; st.innerHTML = '<span class="sd"></span>En camino';
+    } else if (navState === 'arrived') {
+      dEl.textContent = 'Waypoint alcanzado';
+      st.className = 'nc-status arrived'; st.innerHTML = '<span class="sd"></span>Llegó a WP ' + cur.wp;
+      if (++navTimer > 4) { navState = 'starting'; navTimer = 0; }
+    } else if (navState === 'starting') {
+      dEl.textContent = 'Calculando trayectoria…';
+      st.className = 'nc-status starting'; st.innerHTML = '<span class="sd"></span>Iniciando nueva ruta';
+      if (++navTimer > 3) { navIdx = (navIdx + 1) % NAV.length; navDist = NAV[navIdx].dist; navState = 'enroute'; }
+    }
+  }
+  setInterval(navTick, 800);
+
+  /* ---------- placeholder de cámara (sin señal): NADA de feed simulado ---------- */
+  function feedDraw(canvas, hue, t) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.fillStyle = '#0b0f18';
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgba(86,98,122,.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(w, h); ctx.moveTo(w, 0); ctx.lineTo(0, h); ctx.stroke();
+    ctx.fillStyle = 'rgba(138,151,171,.6)';
+    ctx.font = '600 12px ui-monospace, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('SIN SEÑAL', w / 2, h / 2);
+  }
+  function fit(c) { const r = c.getBoundingClientRect(); c.width = Math.max(2, r.width); c.height = Math.max(2, r.height); }
+
+  /* ---------- cuadrícula de cámaras ---------- */
+  const thumbCanvases = [];
+  function buildGrid() {
+    const grid = document.getElementById('cam-grid');
+    CAMS.forEach((c, i) => {
+      const d = document.createElement('div');
+      d.className = 'thumb' + (c.active ? ' active' : '');
+      d.dataset.i = i;
+      d.innerHTML = `<canvas></canvas><span class="live"></span>
+        <span class="badge">${c.kind === 'mjpeg' ? 'IP · MJPEG' : 'ROS · MJPEG'}</span>
+        <span class="tl">${c.name}</span>`;
+      d.onclick = () => selectCam(i);
+      grid.appendChild(d);
+      thumbCanvases.push(d.querySelector('canvas'));
+    });
+    const add = document.createElement('div');
+    add.className = 'thumb add';
+    add.innerHTML = '<span class="plus">+</span><span class="lbl">Añadir cámara IP</span>';
+    add.onclick = () => toast('Configurar nueva <b>cámara IP</b> (RTSP / tópico de imagen ROS 2)');
+    grid.appendChild(add);
+  }
+  function selectCam(i) {
+    CAMS.forEach((c, j) => c.active = (j === i));
+    document.querySelectorAll('.thumb').forEach(t => {
+      if (t.dataset.i !== undefined) t.classList.toggle('active', +t.dataset.i === i);
+    });
+    const c = CAMS[i];
+    set('main-label', `Cámara ${c.name} · ${c.sub}`);
+    set('ov-name', 'CAM_' + c.name.toUpperCase().replace(/\s/g, '_').replace(/[ÁÉÍÓÚ]/g, m => ({ Á: 'A', É: 'E', Í: 'I', Ó: 'O', Ú: 'U' }[m])));
+    set('ov-fps', c.kind === 'mjpeg' ? 'IP · MJPEG' : 'ROS · web_video');
+    if (window.RoverBridge && window.RoverBridge.refreshVideo) window.RoverBridge.refreshVideo();
+  }
+  window.RoverUI = window.RoverUI || {};
+  window.RoverUI.selectCam = selectCam;
+  window.RoverUI.getActiveCam = () => CAMS.find(c => c.active);
+  buildGrid();
+
+  /* ---------- LiDAR real (LaserScan de la OAK vía depthimage_to_laserscan) ---------- */
+  const cloudCanvas = document.getElementById('cloud');
+  let lastScan = null;        // último sensor_msgs/LaserScan recibido
+  let lastScanT = 0;          // marca de tiempo de recepción (para "stale")
+
+  // Llamado por ros.js cuando llega /scan
+  window.RoverUI._setScan = function (msg) {
+    lastScan = msg;
+    lastScanT = performance.now();
+    live.scan = true;
+  };
+
+  function cloudDraw() {
+    const c = cloudCanvas, ctx = c.getContext('2d'), w = c.width, h = c.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Sin datos o datos viejos (>1.5 s) -> no dibujamos nada falso.
+    const stale = !lastScan || (performance.now() - lastScanT > 1500);
+    const offEl = document.getElementById('cloud-off');
+    if (stale) {
+      if (offEl) { offEl.classList.add('show'); const t = offEl.querySelector('div,span,p'); }
+      return;
+    }
+    if (offEl) offEl.classList.remove('show');
+
+    const s = lastScan;
+    const rMax = (s.range_max && s.range_max < 100) ? s.range_max : 12; // m
+    const cx = w / 2, cy = h * 0.58;          // origen del rover (vista cenital)
+    const scale = Math.min(w, h) * 0.46 / rMax; // px por metro
+
+    // Anillos de distancia (cada 2 m) y ejes
+    ctx.strokeStyle = 'rgba(40,224,230,.10)';
+    ctx.lineWidth = 1;
+    for (let rr = 2; rr <= rMax; rr += 2) {
+      ctx.beginPath(); ctx.arc(cx, cy, rr * scale, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    // Puntos del scan
+    const a0 = s.angle_min, da = s.angle_increment;
+    const ranges = s.ranges || [];
+    for (let i = 0; i < ranges.length; i++) {
+      const r = ranges[i];
+      if (!isFinite(r) || r < (s.range_min || 0.05) || r > rMax) continue;
+      const ang = a0 + i * da;
+      // Marco del rover: x adelante, y a la izquierda. En pantalla: arriba = adelante.
+      const px = cx + (r * -Math.sin(ang)) * scale;
+      const py = cy - (r * Math.cos(ang)) * scale;
+      const depth = r / rMax;
+      const hue = 190 + depth * 80;            // cerca cian -> lejos violeta
+      ctx.fillStyle = `hsla(${hue},85%,${64 - depth * 18}%,${1 - depth * 0.5})`;
+      const sz = Math.max(1.4, 3 - depth * 1.6);
+      ctx.fillRect(px - sz / 2, py - sz / 2, sz, sz);
+    }
+
+    // Marca del rover en el origen
+    ctx.fillStyle = '#ffc24b';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 7); ctx.lineTo(cx + 5, cy + 5); ctx.lineTo(cx, cy + 2); ctx.lineTo(cx - 5, cy + 5);
+    ctx.closePath(); ctx.fill();
+
+    // Metadatos en vivo (nº de puntos válidos y alcance)
+    const meta = document.getElementById('cloud-meta');
+    if (meta) {
+      let valid = 0;
+      for (const r of ranges) if (isFinite(r) && r >= (s.range_min || 0.05) && r <= rMax) valid++;
+      meta.textContent = `${valid} pts · ${rMax.toFixed(1)} m · ${ranges.length} haces`;
+    }
+  }
+
+  /* ---------- mapa (waypoints GPS + ruta) ---------- */
+  function buildMap() {
+    const svg = document.getElementById('map-svg');
+    const NS = 'http://www.w3.org/2000/svg';
+    for (let i = 0; i <= 600; i += 50) {
+      [['x1', i, 'y1', 0, 'x2', i, 'y2', 600], ['x1', 0, 'y1', i, 'x2', 600, 'y2', i]].forEach(c => {
+        const l = document.createElementNS(NS, 'line');
+        l.setAttribute('x1', c[1]); l.setAttribute('y1', c[3]); l.setAttribute('x2', c[5]); l.setAttribute('y2', c[7]);
+        l.setAttribute('stroke', '#141b28'); l.setAttribute('stroke-width', '1'); svg.appendChild(l);
+      });
+    }
+    const wps = [[90, 470], [180, 360], [300, 330], [400, 200], [490, 120]];
+    const cur = [245, 345];
+    const trav = document.createElementNS(NS, 'path');
+    trav.setAttribute('d', `M ${wps[0][0]} ${wps[0][1]} L 150 410 L ${cur[0]} ${cur[1]}`);
+    trav.setAttribute('fill', 'none'); trav.setAttribute('stroke', '#3ee0a0'); trav.setAttribute('stroke-width', '2.5');
+    svg.appendChild(trav);
+    const plan = document.createElementNS(NS, 'path');
+    plan.setAttribute('d', `M ${cur[0]} ${cur[1]} L ${wps[2][0]} ${wps[2][1]} L ${wps[3][0]} ${wps[3][1]} L ${wps[4][0]} ${wps[4][1]}`);
+    plan.setAttribute('fill', 'none'); plan.setAttribute('stroke', '#28e0e6'); plan.setAttribute('stroke-width', '2');
+    plan.setAttribute('stroke-dasharray', '7 6'); plan.setAttribute('opacity', '.7'); svg.appendChild(plan);
+    wps.forEach((p, i) => {
+      const done = (i <= 1);
+      const cc = document.createElementNS(NS, 'circle');
+      cc.setAttribute('cx', p[0]); cc.setAttribute('cy', p[1]); cc.setAttribute('r', '9');
+      cc.setAttribute('fill', '#0a0e14'); cc.setAttribute('stroke', done ? '#3ee0a0' : '#b66bff'); cc.setAttribute('stroke-width', '2.5');
+      svg.appendChild(cc);
+      const tx = document.createElementNS(NS, 'text');
+      tx.setAttribute('x', p[0]); tx.setAttribute('y', p[1] + 4); tx.setAttribute('text-anchor', 'middle');
+      tx.setAttribute('font-size', '11'); tx.setAttribute('font-family', 'ui-monospace,monospace');
+      tx.setAttribute('fill', done ? '#3ee0a0' : '#b66bff'); tx.setAttribute('font-weight', '700'); tx.textContent = i + 1;
+      svg.appendChild(tx);
+    });
+    const rover = document.createElementNS(NS, 'g'); rover.setAttribute('id', 'rover-mk');
+    rover.innerHTML = '<polygon points="0,-11 8,9 0,4 -8,9" fill="#ffc24b" stroke="#0a0e14" stroke-width="1.5"/>';
+    rover.setAttribute('transform', `translate(${cur[0]},${cur[1]}) rotate(35)`);
+    const halo = document.createElementNS(NS, 'circle');
+    halo.setAttribute('cx', cur[0]); halo.setAttribute('cy', cur[1]); halo.setAttribute('r', '18');
+    halo.setAttribute('fill', 'none'); halo.setAttribute('stroke', '#ffc24b'); halo.setAttribute('opacity', '.35');
+    const an = document.createElementNS(NS, 'animate');
+    an.setAttribute('attributeName', 'r'); an.setAttribute('values', '12;24;12'); an.setAttribute('dur', '2.4s'); an.setAttribute('repeatCount', 'indefinite');
+    const an2 = document.createElementNS(NS, 'animate');
+    an2.setAttribute('attributeName', 'opacity'); an2.setAttribute('values', '.5;0;.5'); an2.setAttribute('dur', '2.4s'); an2.setAttribute('repeatCount', 'indefinite');
+    halo.appendChild(an); halo.appendChild(an2); svg.appendChild(halo); svg.appendChild(rover);
+  }
+  buildMap();
+
+  /* ---------- minigráficos ---------- */
+  function sparkPath(id, data, color) {
+    const svg = document.getElementById(id);
+    const NS = 'http://www.w3.org/2000/svg';
+    svg.innerHTML = '';
+    const w = 150, h = 34, mn = Math.min(...data), mx = Math.max(...data), rg = (mx - mn) || 1;
+    const p = data.map((v, i) => [i / (data.length - 1) * w, h - 3 - ((v - mn) / rg) * (h - 7)]);
+    const d = 'M ' + p.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' L ');
+    const area = document.createElementNS(NS, 'path');
+    area.setAttribute('d', d + ` L ${w} ${h} L 0 ${h} Z`);
+    area.setAttribute('fill', color); area.setAttribute('opacity', '.12'); svg.appendChild(area);
+    const line = document.createElementNS(NS, 'path');
+    line.setAttribute('d', d); line.setAttribute('fill', 'none'); line.setAttribute('stroke', color); line.setAttribute('stroke-width', '1.8');
+    svg.appendChild(line);
+    const last = p[p.length - 1];
+    const dot = document.createElementNS(NS, 'circle');
+    dot.setAttribute('cx', last[0]); dot.setAttribute('cy', last[1]); dot.setAttribute('r', '2.5'); dot.setAttribute('fill', color);
+    svg.appendChild(dot);
+  }
+  let batHist = Array.from({ length: 40 }, (_, i) => 90 - i * 0.08 + Math.random() * 0.5);
+  let velHist = Array.from({ length: 40 }, () => 0.4 + Math.random() * 0.25);
+  let latHist = Array.from({ length: 40 }, () => 18 + Math.random() * 8);
+
+  /* ---------- estado de telemetría (compartido con datos en vivo) ---------- */
+  const tel = { bat: NaN, cpu: NaN, gpu: NaN, lat: NaN, vel: NaN, yaw: NaN, pitch: NaN, roll: NaN, volt: NaN, amp: NaN, rssi: NaN };
+  const D = '—';
+
+  function renderTelemetry() {
+    // Sistema (CPU/GPU/lat/rssi): solo real (/diagnostics). Sin fuente -> "—".
+    set('s-cpu', live.system && !isNaN(tel.cpu) ? Math.round(tel.cpu) + ' °C' : D);
+    set('s-gpu', live.system && !isNaN(tel.gpu) ? Math.round(tel.gpu) + ' °C' : D);
+    set('s-lat', live.system && !isNaN(tel.lat) ? Math.round(tel.lat) + ' ms' : D);
+    set('s-rssi', live.system && !isNaN(tel.rssi) ? tel.rssi + ' dBm' : D);
+
+    // Velocidad (/odometry/filtered)
+    set('s-vel', live.motion && !isNaN(tel.vel) ? tel.vel.toFixed(2) + ' m/s' : D);
+
+    // Actitud (/imu/data_raw)
+    set('s-yaw',   live.attitude ? Math.round(tel.yaw) + '°'   : D);
+    set('s-pitch', live.attitude ? Math.round(tel.pitch) + '°' : D);
+    set('s-roll',  live.attitude ? Math.round(tel.roll) + '°'  : D);
+    set('a-yaw',   live.attitude ? Math.round(tel.yaw) + '°'   : D);
+    set('a-pitch', live.attitude ? Math.round(tel.pitch) + '°' : D);
+    set('a-roll',  live.attitude ? Math.round(tel.roll) + '°'  : D);
+    const hz = document.getElementById('horizon');
+    if (hz) hz.setAttribute('transform', live.attitude
+      ? `rotate(${-tel.roll} 110 110) translate(0 ${tel.pitch * 2})` : 'rotate(0 110 110)');
+
+    // Batería (/battery_state)
+    if (live.battery && !isNaN(tel.bat)) {
+      set('s-bat', Math.round(tel.bat) + '%');
+      document.getElementById('bat-bar').style.width = tel.bat + '%';
+      document.getElementById('s-bat-sub').textContent =
+        `${(tel.volt||0).toFixed(1)} V · ${(tel.amp||0).toFixed(1)} A`;
+    } else {
+      set('s-bat', D);
+      document.getElementById('bat-bar').style.width = '0%';
+      document.getElementById('s-bat-sub').textContent = 'Sin /battery_state';
+    }
+
+    const ov = document.getElementById('ov-lat');
+    if (ov) ov.textContent = live.system && !isNaN(tel.lat) ? Math.round(tel.lat) + ' ms' : D;
+
+    // Sparklines: solo crecen con datos reales
+    if (live.battery && !isNaN(tel.bat)) { batHist.push(tel.bat); batHist.shift(); }
+    if (live.motion && !isNaN(tel.vel)) { velHist.push(tel.vel); velHist.shift(); }
+    if (live.system && !isNaN(tel.lat)) { latHist.push(tel.lat); latHist.shift(); }
+    sparkPath('sp-bat', batHist, '#3ee0a0'); sparkPath('sp-vel', velHist, '#5b8cff'); sparkPath('sp-lat', latHist, '#28e0e6');
+    set('sp-bat-v', live.battery && !isNaN(tel.bat) ? Math.round(tel.bat) + '%' : D);
+    set('sp-vel-v', live.motion && !isNaN(tel.vel) ? tel.vel.toFixed(2) + ' m/s' : D);
+    set('sp-lat-v', live.system && !isNaN(tel.lat) ? Math.round(tel.lat) + ' ms' : D);
+
+    // Marca del rover en el mini-mapa: gira con el yaw real
+    const mk = document.getElementById('rover-mk');
+    if (mk && live.attitude) mk.setAttribute('transform', `translate(245,345) rotate(${Math.round(tel.yaw)})`);
+  }
+
+  function jitter() {
+    // SIM=false -> sin fabricación de datos. Solo refresca el render.
+    if (SIM) { /* (simulación desactivada deliberadamente) */ }
+    renderTelemetry();
+  }
+
+  /* ---------- API de datos en vivo (invocada por ros.js) ---------- */
+  window.RoverUI.live = {
+    battery(pct, voltage, current) {
+      live.battery = true;
+      if (pct != null && !isNaN(pct)) tel.bat = pct;
+      if (voltage != null && !isNaN(voltage)) tel.volt = voltage;
+      if (current != null && !isNaN(current)) tel.amp = Math.abs(current);
+      const v = document.getElementById('s-bat');
+      v.className = 'v ' + (tel.bat > 50 ? 'green' : tel.bat > 20 ? 'amber' : 'red');
+    },
+    velocity(mps) { live.motion = true; if (mps != null && !isNaN(mps)) tel.vel = mps; },
+    attitude(yawDeg, pitchDeg, rollDeg) {
+      live.attitude = true;
+      if (yawDeg != null && !isNaN(yawDeg)) tel.yaw = (yawDeg + 360) % 360;
+      if (pitchDeg != null && !isNaN(pitchDeg)) tel.pitch = pitchDeg;
+      if (rollDeg != null && !isNaN(rollDeg)) tel.roll = rollDeg;
+    },
+    gps(lat, lon, fix, sats, hdop) {
+      live.gps = true;
+      set('s-pos', lat.toFixed(4) + ', ' + lon.toFixed(4));
+      const g = document.getElementById('s-gps');
+      const fixTxt = fix >= 1 ? 'Fix 3D' : 'Sin fix';
+      g.className = 'v ' + (fix >= 1 ? 'green' : 'red');
+      g.firstChild.nodeValue = fixTxt + ' ';
+      const small = g.querySelector('small');
+      if (small) small.textContent = `${sats != null ? sats : '—'} sat · HDOP ${hdop != null ? hdop.toFixed(1) : '—'}`;
+    },
+    system(o) {
+      live.system = true;
+      if (o.cpu != null) tel.cpu = o.cpu;
+      if (o.gpu != null) tel.gpu = o.gpu;
+      if (o.latency != null) tel.lat = o.latency;
+      if (o.rssi != null) { tel.rssi = o.rssi; set('t-rssi', o.rssi + ' dBm'); }
+    },
+    nodes(map) {
+      // map: { nodeName: true/false }
+      document.querySelectorAll('.node[data-node]').forEach(el => {
+        const present = !!map[el.dataset.node];
+        const nd = el.querySelector('.nd');
+        nd.className = 'nd ' + (present ? 'ok' : 'off');
+        const hz = el.querySelector('.hz');
+        if (hz) hz.textContent = present ? 'online' : 'offline';
+      });
+    },
+    connection(ok) {
+      const dot = document.getElementById('conn-dot');
+      const txt = document.getElementById('conn-txt');
+      dot.className = 'dot ' + (ok ? 'pulse' : 'bad');
+      txt.textContent = ok ? 'Conectado · ' + CFG.rosbridgeUrl.replace(/^wss?:\/\//, '') : 'Sin conexión · sin datos';
+      const ros2 = document.getElementById('ros2-dot');
+      if (ros2) { ros2.style.background = ok ? 'var(--cyan)' : 'var(--txt-mute)'; ros2.style.boxShadow = ok ? '0 0 8px var(--cyan)' : 'none'; }
+      const wd = document.getElementById('wd-tag');
+      if (wd) { wd.className = 'tag ' + (ok ? 'ok' : 'bad'); wd.textContent = ok ? 'OK' : 'OFF'; }
+      const wdm = document.getElementById('wd-mode');
+      if (wdm) wdm.textContent = ok ? 'Modo: NORMAL' : 'Modo: SIN DATOS';
+    },
+    /* permite a ros.js volver a simulación si se pierde una fuente */
+    scan(msg) { if (window.RoverUI._setScan) window.RoverUI._setScan(msg); },
+    reset() { live.battery = live.motion = live.attitude = live.gps = live.system = live.scan = false; lastScan = null; },
+  };
+
+  /* ---------- bucle de animación ---------- */
+  function resizeAll() {
+    fit(document.getElementById('feed-main'));
+    fit(cloudCanvas);
+    thumbCanvases.forEach(fit);
+  }
+  window.addEventListener('resize', resizeAll);
+  setTimeout(resizeAll, 60);
+
+  function loop(t) {
+    // El feed principal sólo se dibuja si no hay un <img> de vídeo en vivo encima
+    const usingVideo = window.RoverBridge && window.RoverBridge.mainVideoActive && window.RoverBridge.mainVideoActive();
+    if (!usingVideo) feedDraw(document.getElementById('feed-main'), (window.RoverUI.getActiveCam() || CAMS[0]).hue, t);
+    CAMS.forEach((c, i) => { if (thumbCanvases[i] && thumbCanvases[i].width > 2) feedDraw(thumbCanvases[i], c.hue, t + i * 500); });
+    if (cloudOn && cloudCanvas.width > 2) cloudDraw(t);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+  setInterval(jitter, 700);
+  jitter();
+  sparkPath('sp-bat', batHist, '#3ee0a0'); sparkPath('sp-vel', velHist, '#5b8cff'); sparkPath('sp-lat', latHist, '#28e0e6');
+})();
+
+</script>
+<script>
+/* =========================================================================
+   Rover UI · Integración con ROS 2 Humble
+   -------------------------------------------------------------------------
+   Usa roslibjs sobre rosbridge_server (rosbridge_suite) para suscribirse a
+   los tópicos de telemetría y publicar comandos de teleoperación.
+   Si ROSLIB no está disponible o no hay conexión, la interfaz continúa en
+   modo simulación (definido en app.js).
+   ========================================================================= */
+(function () {
+  const CFG = window.ROVER_CONFIG;
+  const UI = window.RoverUI;
+
+  if (typeof ROSLIB === 'undefined') {
+    console.warn('[rover-ui] ROSLIB no está cargado; la interfaz opera en modo simulación.');
+    UI.live.connection(false);
+    return;
+  }
+
+  /* ---- utilidades de conversión ---- */
+  function quatToEuler(q) {
+    // devuelve {roll, pitch, yaw} en grados
+    const { x, y, z, w } = q;
+    const sinr = 2 * (w * x + y * z), cosr = 1 - 2 * (x * x + y * y);
+    const roll = Math.atan2(sinr, cosr);
+    let sinp = 2 * (w * y - z * x);
+    sinp = Math.max(-1, Math.min(1, sinp));
+    const pitch = Math.asin(sinp);
+    const siny = 2 * (w * z + x * y), cosy = 1 - 2 * (y * y + z * z);
+    const yaw = Math.atan2(siny, cosy);
+    const r = 180 / Math.PI;
+    return { roll: roll * r, pitch: pitch * r, yaw: yaw * r };
+  }
+
+  const ros = new ROSLIB.Ros();
+  const pubs = {};
+  let nodesTimer = null;
+
+  function buildPublishers() {
+    Object.keys(CFG.publishers).forEach(k => {
+      const p = CFG.publishers[k];
+      pubs[k] = new ROSLIB.Topic({ ros, name: p.name, messageType: p.type });
+    });
+  }
+
+  function buildSubscribers() {
+    const T = CFG.topics;
+
+    new ROSLIB.Topic({ ros, name: T.imu.name, messageType: T.imu.type }).subscribe(m => {
+      if (m.orientation) { const e = quatToEuler(m.orientation); UI.live.attitude(e.yaw, e.pitch, e.roll); }
+    });
+
+    new ROSLIB.Topic({ ros, name: T.gps.name, messageType: T.gps.type }).subscribe(m => {
+      // status: -1 NO_FIX, 0 FIX, 1 SBAS, 2 GBAS
+      const fix = (m.status && m.status.status != null) ? (m.status.status >= 0 ? 1 : 0) : 1;
+      UI.live.gps(m.latitude, m.longitude, fix, null, null);
+    });
+
+    new ROSLIB.Topic({ ros, name: T.odom.name, messageType: T.odom.type }).subscribe(m => {
+      const v = m.twist && m.twist.twist && m.twist.twist.linear;
+      if (v) UI.live.velocity(Math.hypot(v.x || 0, v.y || 0));
+    });
+
+    new ROSLIB.Topic({ ros, name: T.battery.name, messageType: T.battery.type }).subscribe(m => {
+      let pct = m.percentage;
+      if (pct != null && pct <= 1.0) pct = pct * 100; // BatteryState usa 0..1
+      UI.live.battery(pct, m.voltage, m.current);
+    });
+
+    new ROSLIB.Topic({ ros, name: T.diagnostics.name, messageType: T.diagnostics.type }).subscribe(m => {
+      const sys = {};
+      (m.status || []).forEach(s => {
+        (s.values || []).forEach(kv => {
+          const key = (kv.key || '').toLowerCase();
+          if (key.includes('cpu') && key.includes('temp')) sys.cpu = parseFloat(kv.value);
+          else if (key.includes('gpu') && key.includes('temp')) sys.gpu = parseFloat(kv.value);
+          else if (key.includes('rssi') || key.includes('signal')) sys.rssi = parseInt(kv.value, 10);
+          else if (key.includes('latency')) sys.latency = parseFloat(kv.value);
+        });
+      });
+      if (Object.keys(sys).length) UI.live.system(sys);
+    });
+
+    // LiDAR (OAK -> depthimage_to_laserscan). Suele ser BEST_EFFORT: ver nota QoS.
+    new ROSLIB.Topic({
+      ros, name: T.scan.name, messageType: T.scan.type,
+      throttle_rate: 100,          // ms: limita a ~10 Hz hacia la UI
+      queue_length: 1,
+    }).subscribe(m => { UI.live.scan(m); });
+  }
+
+  /* ---- estado de nodos vía /rosapi/nodes ---- */
+  function pollNodes() {
+    const svc = new ROSLIB.Service({ ros, name: '/rosapi/nodes', serviceType: 'rosapi/Nodes' });
+    svc.callService(new ROSLIB.ServiceRequest({}), res => {
+      const running = res.nodes || [];
+      const map = {};
+      CFG.expectedNodes.forEach(exp => {
+        map[exp] = running.some(n => n.indexOf(exp) !== -1);
+      });
+      UI.live.nodes(map);
+    }, () => {});
+  }
+
+  /* ---- publicadores expuestos a la UI ---- */
+  const lin = CFG.teleop.linear, ang = CFG.teleop.angular;
+  const TWIST = {
+    '↑ FWD': { lx: lin, az: 0 },
+    '↓ REV': { lx: -lin, az: 0 },
+    '←':     { lx: 0, az: ang },
+    '→':     { lx: 0, az: -ang },
+    'STOP':  { lx: 0, az: 0 },
+  };
+  window.RoverBridge = {
+    cmdVel(label) {
+      if (!pubs.cmdVel) return;
+      const t = TWIST[label] || { lx: 0, az: 0 };
+      pubs.cmdVel.publish(new ROSLIB.Message({
+        linear:  { x: t.lx, y: 0, z: 0 },
+        angular: { x: 0, y: 0, z: t.az },
+      }));
+    },
+    estop() {
+      if (pubs.estop) pubs.estop.publish(new ROSLIB.Message({ data: true }));
+      this.cmdVel('STOP');
+    },
+    mode(m) { if (pubs.mode) pubs.mode.publish(new ROSLIB.Message({ data: m })); },
+    arm(on) { if (pubs.arm) pubs.arm.publish(new ROSLIB.Message({ data: !!on })); },
+
+    /* ---- cámaras: IP (MJPEG directo) o ROS (web_video_server) ---- */
+    camUrl(cam) {
+      if (!cam) return null;
+      if (cam.kind === 'mjpeg') return cam.url || null;           // IP directa
+      if (cam.kind === 'ros' && cam.topic && ros.isConnected)     // por ROS
+        return `${CFG.videoBase}/stream?topic=${encodeURIComponent(cam.topic)}`;
+      return null;
+    },
+    mainVideoActive() {
+      const cam = UI.getActiveCam();
+      return !!this.camUrl(cam);
+    },
+    refreshVideo() {
+      const feed = document.querySelector('.feed');
+      const canvas = document.getElementById('feed-main');
+      const cam = UI.getActiveCam();
+      const url = this.camUrl(cam);
+      let img = document.getElementById('feed-main-img');
+      if (url) {
+        if (!img) {
+          img = document.createElement('img');
+          img.id = 'feed-main-img';
+          img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'cover';
+          img.onerror = () => { img.style.display = 'none'; canvas.style.display = ''; };
+          feed.insertBefore(img, canvas.nextSibling);
+        }
+        img.src = url;
+        img.style.display = '';
+        canvas.style.display = 'none';
+      } else if (img) {
+        img.style.display = 'none';
+        canvas.style.display = '';
+      }
+    },
+  };
+
+  /* ---- ciclo de vida de la conexión ---- */
+  ros.on('connection', () => {
+    console.info('[rover-ui] Conectado a rosbridge:', CFG.rosbridgeUrl);
+    UI.live.connection(true);
+    buildPublishers();
+    buildSubscribers();
+    window.RoverBridge.refreshVideo();
+    pollNodes();
+    clearInterval(nodesTimer);
+    nodesTimer = setInterval(pollNodes, 5000);
+  });
+
+  ros.on('error', () => { UI.live.connection(false); });
+
+  ros.on('close', () => {
+    console.warn('[rover-ui] Conexión con rosbridge cerrada; reintentando…');
+    UI.live.connection(false);
+    UI.live.reset();
+    clearInterval(nodesTimer);
+    window.RoverBridge.refreshVideo();
+    setTimeout(connect, CFG.reconnectMs);
+  });
+
+  function connect() {
+    try { ros.connect(CFG.rosbridgeUrl); }
+    catch (e) { setTimeout(connect, CFG.reconnectMs); }
+  }
+
+  UI.live.connection(false);
+  connect();
+})();
+
+</script>
+</body>
+</html>
