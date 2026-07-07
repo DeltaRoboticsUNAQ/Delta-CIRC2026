@@ -21,8 +21,8 @@ RUN apt-get update && \
         ros-humble-nav2-bringup \
         v4l-utils \
         usbutils \
-        ros2-testing-apt-source \
-        ros-humble-depthai-ros-v3 \
+        # ros2-testing-apt-source \
+        # ros-humble-depthai-ros-v3 \
         && rm -rf /var/lib/apt/lists/*
 
 # Source ROS automatically
