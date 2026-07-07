@@ -55,6 +55,7 @@ install(PROGRAMS
   scripts/arm_keyboard_teleop.py
   scripts/arm_hw_teleop_bridge.py
   scripts/lector_stm32.py
+  scripts/arm_hid_teleop.py
   scripts/arm_hardware_bridge.py
   scripts/stm32_hardware_bridge.py
   scripts/fake_stm32.py
