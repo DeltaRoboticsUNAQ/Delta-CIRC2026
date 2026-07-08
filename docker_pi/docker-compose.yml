@@ -1,0 +1,22 @@
+services:
+  arm_bridge:
+    build:
+      context: ..                  # Le dice a Docker que busque el código una carpeta arriba
+      dockerfile: docker_pi/Dockerfile
+    container_name: circ_arm_bridge
+    network_mode: "host"
+    privileged: true
+    volumes:
+      - /dev:/dev
+    command: ros2 run my_package arm_serial_bridge_node
+
+  arm_teleop:
+    build:
+      context: ..
+      dockerfile: docker_pi/Dockerfile
+    container_name: circ_arm_teleop
+    network_mode: "host"
+    privileged: true
+    volumes:
+      - /dev:/dev
+    command: bash -c "sleep 3 && ros2 run my_package arm_hid_teleop_node"
