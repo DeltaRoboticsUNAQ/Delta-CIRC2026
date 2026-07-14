@@ -36,6 +36,7 @@ def generate_launch_description():
                 output='screen',
                 parameters=[config_filepath, {'publish_stamped_twist': False}],
                 remappings=[('/cmd_vel', cmd_vel_topic)],
+                
             ),
         ]
     )

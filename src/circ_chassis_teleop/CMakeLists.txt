@@ -18,4 +18,16 @@ install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(PROGRAMS
+  src/xbox_tank_teleop.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME xbox_tank
+)
+
+install(PROGRAMS
+  src/tank_teleop.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME tank_teleop
+)
+
 ament_package()

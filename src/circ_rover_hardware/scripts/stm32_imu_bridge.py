@@ -81,7 +81,7 @@ class STM32ImuBridge(Node):
         super().__init__('stm32_imu_bridge')
 
         # ── Parametros ────────────────────────────────────────────────
-        self.declare_parameter('port', '/dev/ttyACM0')
+        self.declare_parameter('port', '/dev/ttyACM2')
         self.declare_parameter('baudrate', 460800)         # ¡igual que USART2!
         self.declare_parameter('frame_id', 'imu_link')
         self.declare_parameter('topic', '/imu/data_raw')

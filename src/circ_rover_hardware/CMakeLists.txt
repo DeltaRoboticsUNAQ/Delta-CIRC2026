@@ -14,16 +14,17 @@ install(PROGRAMS
   RENAME wheel_bridge
 )
 
-install(PROGRAMS
-  scripts/fake_motors.py
-  DESTINATION lib/${PROJECT_NAME}
-  RENAME fake_motors
-)
 
 install(PROGRAMS
   scripts/stm32_imu_bridge.py
   DESTINATION lib/${PROJECT_NAME}
   RENAME stm32_imu_bridge
+)
+
+install(PROGRAMS
+  scripts/rover_base_node.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME rover_base
 )
 
 install(DIRECTORY launch
