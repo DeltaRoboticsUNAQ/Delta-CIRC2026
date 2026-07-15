@@ -1,9 +1,0 @@
-../Core/Src/main.c:79:5:main	5
-../Core/Src/main.c:166:6:SystemClock_Config	3
-../Core/Src/main.c:211:13:MX_NVIC_Init	1
-../Core/Src/main.c:219:5:uart2_write	2
-../Core/Src/main.c:226:5:__io_putchar	1
-../Core/Src/main.c:231:10:Leer_ADC	1
-../Core/Src/main.c:237:10:Leer_Encoder	1
-../Core/Src/main.c:241:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Src/main.c:252:6:Error_Handler	1

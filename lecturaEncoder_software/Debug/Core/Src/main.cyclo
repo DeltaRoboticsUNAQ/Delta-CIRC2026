@@ -1,8 +1,0 @@
-../Core/Src/main.c:73:5:main	1
-../Core/Src/main.c:122:6:SystemClock_Config	3
-../Core/Src/main.c:167:13:MX_NVIC_Init	1
-../Core/Src/main.c:175:5:uart2_write	2
-../Core/Src/main.c:182:5:__io_putchar	1
-../Core/Src/main.c:187:6:HAL_GPIO_EXTI_Callback	5
-../Core/Src/main.c:206:6:HAL_TIM_PeriodElapsedCallback	2
-../Core/Src/main.c:223:6:Error_Handler	1
