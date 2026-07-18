@@ -1,0 +1,568 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "adc.h"
+#include "dma.h"
+#include "tim.h"
+#include "usart.h"
+#include "gpio.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "RoboClaw.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <string.h>
+/* USER CODE END Includes */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+// Direcciones RoboClaw
+#define RC_ADDR_BASE   0x81
+#define RC_ADDR_WRIST  0x80
+
+// Timeout de seguridad para RoboClaw (7 segundos)
+#define TIMEOUT_MS 7000
+
+// ---- Puente ROS ----
+#define RX_RING_SIZE     256
+#define MAX_BASE_DUTY    127     // tope de velocidad base (0-127); tu teclado usaba 60
+#define WRIST_MIX_RANGE  30     // ±rango sobre 64 para la muneca (igual que tu 94/34)
+
+// CAMBIO: timeout de ACK de las RoboClaw (antes 100 ms — bloqueaba todo si no respondian)
+#define RC_ACK_TIMEOUT_MS  20
+/* USER CODE END PD */
+
+/* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN PV */
+// Variables para actuadores lineales (ADC/PWM)
+uint16_t adc_val[2];
+
+int pos1 = -1;
+int pos2 = -1;
+
+// ... tus variables anteriores ...
+int current1 = 0;
+int current2 = 0;
+
+// ¡NUEVO MODO HÍBRIDO!
+uint8_t mode1 = 0; // 0 = Posición, 1 = Velocidad
+uint8_t mode2 = 0;
+int vel1 = 0;
+int vel2 = 0;
+
+float kp = 4.5f;
+float ki = 2.8f;
+
+int e1 = 0;
+int e2 = 0;
+
+int duty1 = 0;
+int duty2 = 0;
+
+float integral1 = 0.0f;
+float integral2 = 0.0f;
+
+float integral_max = 300.0f;
+
+// Variables para RoboClaw
+RoboClaw_HandleTypeDef rcBase;
+RoboClaw_HandleTypeDef rcWrist;
+
+// CAMBIO: presencia de RoboClaws (detectadas UNA vez al arranque).
+// Si no responden, se omite TODO su trafico para no bloquear el lazo
+// de control de los actuadores (cada write_n espera ACK con reintentos).
+bool rcOnline = false;
+
+uint32_t lastCommandTime = 0;
+bool motorsRunning = false;
+
+// Variables para recordar comandos de RoboClaw
+int lastBaseVelCmd = -999;
+int lastPitchVelCmd = -999;
+int lastRollVelCmd = -999;
+
+// Variable para el "latido" de las RoboClaw
+uint32_t rc_last_tx = 0;
+
+// Scheduler por timers
+volatile uint8_t flag_control = 0;
+
+// ---- Puente ROS ----
+volatile uint8_t  rxRing[RX_RING_SIZE];
+volatile uint16_t rxHead = 0, rxTail = 0;
+
+// Estimador de posición
+int   baseVelCmd = 0, pitchVelCmd = 0, rollVelCmd = 0;
+float basePosEst = 0.0f, pitchPosEst = 0.0f, rollPosEst = 0.0f;
+uint8_t fbDiv = 0;
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+static void MX_NVIC_Init(void);
+/* USER CODE BEGIN PFP */
+int uart2_write(int ch);
+int __io_putchar(int ch);
+void forwardAct(int actuator, int duty);
+void backwardAct(int actuator, int duty);
+void actStop(void);
+void stopAllRoboClaw(void);
+void processCommand(uint8_t ch);
+void setBaseVel(int v);
+void updateWristDifferential(int pitch, int roll); //Nueva función roboclaw de la muñeca
+void parseRosCommand(char *line);
+void pollUartCommands(void);
+/* USER CODE END PFP */
+
+int main(void)
+{
+  HAL_Init();
+  SystemClock_Config();
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_USART2_UART_Init();
+  MX_ADC1_Init();
+  MX_TIM1_Init();
+  MX_TIM3_Init();
+  MX_USART1_UART_Init();
+  MX_NVIC_Init();
+
+  /* USER CODE BEGIN 2 */
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adc_val, 2);
+
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);
+
+  HAL_TIM_Base_Start_IT(&htim3);
+
+  // CAMBIO: timeout corto (20 ms). Con 100 ms + 2 reintentos, cada comando
+  // a una RoboClaw ausente bloqueaba ~300 ms.
+  RoboClaw_Init(&rcBase, &huart1, RC_ACK_TIMEOUT_MS);
+  RoboClaw_Init(&rcWrist, &huart1, RC_ACK_TIMEOUT_MS);
+
+  actStop();
+
+  // CAMBIO v2: deteccion de RoboClaws SOLO con escritura. La version anterior
+  // usaba ReadMainBatteryVoltage, cuyo flush() interno es un while que lee
+  // mientras lleguen bytes: con PA10 (RX) flotando (RoboClaws desconectadas,
+  // sin pull-up) el UART puede "recibir" ruido sin parar y el micro se cuelga
+  // ANTES del banner. write_n no hace flush y esta acotado a 3 intentos x 20 ms:
+  // manda un stop (velocidad 0) y solo marca online si llega el ACK 0xFF.
+  // (Si conectas las RoboClaws despues, resetea la Nucleo con ellas encendidas.)
+  rcOnline = RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, 0);
+  if (!rcOnline)
+      rcOnline = RoboClaw_ForwardM1(&rcWrist, RC_ADDR_WRIST, 0);
+
+  stopAllRoboClaw();   // internamente ya esta guardado con rcOnline
+
+  __HAL_UART_ENABLE_IT(&huart2, UART_IT_RXNE);
+  HAL_NVIC_SetPriority(USART2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(USART2_IRQn);
+
+  printf("\r\n========================================\r\n");
+  printf("		Control Base STM32\r\n");
+  printf("========================================\r\n");
+  printf("RoboClaw: %s\r\n", rcOnline ? "ONLINE" : "NO DETECTADA (trafico RoboClaw omitido)");
+  printf("Controles Actuadores Lineales:\r\n");
+  printf("  1/2/3 - Actuador 1: 25%%/50%%/75%%\r\n");
+  printf("  4/5/6 - Actuador 2: 25%%/50%%/75%%\r\n");
+  printf("  0 - Ambos a 0%%\r\n");
+  printf("  9 - Ambos a 100%%\r\n");
+  printf("----------------------------------------\r\n");
+  printf("Controles RoboClaw:\r\n");
+  printf("  A/D - Base izquierda/derecha\r\n");
+  printf("  W/S - Muneca subir/bajar\r\n");
+  printf("  Q/E - Muneca rotar izq/der\r\n");
+  printf("  ESPACIO - Detener RoboClaw\r\n");
+  printf("  X - Detener TODO\r\n");
+  printf("----------------------------------------\r\n");
+  printf("Comandos ROS (prefijo '#'): #A1,p #A2,p #BV,v #WP,v #WR,v #STOP\r\n");
+  printf("Auto-stop RoboClaw: 7 segundos\r\n\r\n");
+  /* USER CODE END 2 */
+
+  while (1)
+  {
+      // Drenar buffer todo el tiempo
+      pollUartCommands();
+
+      if(flag_control==1)
+      {
+          flag_control = 0;
+
+          // CAMBIO: latido visual. LD2 (LED verde, PA5) parpadea a ~1 Hz
+          // cuando el lazo de control corre => "el micro esta vivo" aunque
+          // el serial no funcione.
+          {
+              static uint8_t ledDiv = 0;
+              if (++ledDiv >= 25) { ledDiv = 0; HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); }
+          }
+          // --- LATIDO ROBOCLAW (HEARTBEAT) ---
+                    if (baseVelCmd != lastBaseVelCmd ||
+                        pitchVelCmd != lastPitchVelCmd ||
+                        rollVelCmd != lastRollVelCmd ||
+                        (HAL_GetTick() - rc_last_tx > 100))
+                    {
+                        // Base normal
+                        setBaseVel(baseVelCmd);
+
+                        // Nueva cinemática de muñeca
+                        updateWristDifferential(pitchVelCmd, rollVelCmd);
+
+                        lastBaseVelCmd = baseVelCmd;
+                        lastPitchVelCmd = pitchVelCmd;
+                        lastRollVelCmd = rollVelCmd;
+                        rc_last_tx = HAL_GetTick();
+                    }
+          current1 = (adc_val[0] * 100) / 4095;
+          current2 = (adc_val[1] * 100) / 4095;
+
+          // --- SEGURO ANTI-SUSTOS EN EL ARRANQUE ---
+          if (pos1 == -1) pos1 = current1;
+          if (pos2 == -1) pos2 = current2;
+
+          e1 = pos1 - current1;
+          e2 = pos2 - current2;
+
+          // ACTUADOR 1
+          if (mode1 == 0) {
+              if(abs(e1) < 2){
+                  integral1 = 0.0f;
+                  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+                  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+                  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+              }else{
+                  integral1 += e1;
+                  if(integral1 > integral_max) integral1 = integral_max;
+                  if(integral1 < -integral_max) integral1 = -integral_max;
+                  duty1 = (int)((kp * abs(e1)) + (ki * abs(integral1)));
+
+                  // LIMITADOR ELÉCTRICO: Evita que el voltaje se caiga
+                  if(duty1 > 700) duty1 = 700;
+
+                  if(e1 > 0) forwardAct(1, duty1);
+                  else backwardAct(1, duty1);
+              }
+          } else {
+              integral1 = 0.0f; pos1 = current1; // Sincroniza en silencio
+              int v_pwm = vel1 * 10;
+              if (v_pwm > 999) v_pwm = 999; if (v_pwm < -999) v_pwm = -999;
+              if (v_pwm > 0) forwardAct(1, v_pwm);
+              else if (v_pwm < 0) backwardAct(1, -v_pwm);
+              else {
+                  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+                  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+                  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+              }
+          }
+
+          // ACTUADOR 2
+          if (mode2 == 0) {
+              if(abs(e2) < 2){
+                  integral2 = 0.0f;
+                  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+                  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+                  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+              }else{
+                  integral2 += e2;
+                  if(integral2 > integral_max) integral2 = integral_max;
+                  if(integral2 < -integral_max) integral2 = -integral_max;
+                  duty2 = (int)((kp * abs(e2)) + (ki * abs(integral2)));
+
+                  // LIMITADOR ELÉCTRICO: Evita que el voltaje se caiga
+                  if(duty2 > 700) duty2 = 700;
+
+                  if(e2 > 0) forwardAct(2, duty2);
+                  else backwardAct(2, duty2);
+              }
+          } else {
+              integral2 = 0.0f; pos2 = current2;
+              int v_pwm2 = vel2 * 10;
+              if (v_pwm2 > 999) v_pwm2 = 999; if (v_pwm2 < -999) v_pwm2 = -999;
+              if (v_pwm2 > 0) forwardAct(2, v_pwm2);
+              else if (v_pwm2 < 0) backwardAct(2, -v_pwm2);
+              else {
+                  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+                  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+                  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+              }
+          }
+          //Timeout RoboClaw
+          if (motorsRunning && (HAL_GetTick() - lastCommandTime > TIMEOUT_MS))
+          {
+              stopAllRoboClaw();
+              motorsRunning = false;
+              baseVelCmd = pitchVelCmd = rollVelCmd = 0;
+              lastBaseVelCmd = lastPitchVelCmd = lastRollVelCmd = 0;
+              // CAMBIO: tambien corta el modo velocidad de los actuadores.
+              // Antes vel1/vel2 quedaban vivos y los actuadores seguian
+              // moviendose para siempre tras el timeout.
+              vel1 = 0;
+              vel2 = 0;
+              printf(">> AUTO-STOP (timeout 7s)\r\n");
+          }
+
+          // Realimentacion a ROS
+          if(++fbDiv >= 2){
+              fbDiv = 0;
+              basePosEst  += (float)baseVelCmd  * 0.02f;
+              pitchPosEst += (float)pitchVelCmd * 0.02f;
+              rollPosEst  += (float)rollVelCmd  * 0.02f;
+              printf("J,%d,%d,%d,%d,%d\r\n",
+                     current1, current2,
+                     (int)basePosEst, (int)pitchPosEst, (int)rollPosEst);
+          }
+      }
+  }
+}
+
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  // CAMBIO CRITICO: la Nucleo-F446RE no trae cristal (X3 sin soldar); los 8 MHz
+  // del HSE vienen del MCO del ST-LINK y eso exige modo BYPASS. Con RCC_HSE_ON
+  // el HSE nunca arranca -> HAL_RCC_OscConfig falla -> Error_Handler -> placa
+  // muda (sin serial y sin movimiento).
+  // OJO: SystemClock_Config esta FUERA de los bloques USER CODE. Cambia esto
+  // tambien en el .ioc (System Core -> RCC -> HSE -> "BYPASS Clock Source")
+  // o CubeMX lo revertira en la proxima regeneracion.
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 180;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 2;
+  RCC_OscInitStruct.PLL.PLLR = 2;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) { Error_Handler(); }
+
+  if (HAL_PWREx_EnableOverDrive() != HAL_OK) { Error_Handler(); }
+
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) { Error_Handler(); }
+}
+
+static void MX_NVIC_Init(void)
+{
+  HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(TIM3_IRQn);
+}
+
+/* USER CODE BEGIN 4 */
+int uart2_write(int ch){
+    while(!(USART2->SR & USART_SR_TXE)){}
+    USART2->DR = (ch & 0xFF);
+    return ch;
+}
+
+int __io_putchar(int ch){
+    uart2_write(ch);
+    return ch;
+}
+
+void forwardAct(int actuator, int duty){
+    if(actuator == 1){
+        __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, duty);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+    }
+    else if(actuator == 2){
+        __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, duty);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+    }
+}
+
+void backwardAct(int actuator, int duty){
+    if(actuator == 1){
+        __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, duty);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+    }
+    else if(actuator == 2){
+        __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, duty);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+    }
+}
+
+void actStop(void){
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+}
+
+void stopAllRoboClaw(void)
+{
+    if(!rcOnline) return;   // CAMBIO: no bloquear si no hay RoboClaws
+    RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, 0);
+    RoboClaw_ForwardM1(&rcWrist, RC_ADDR_WRIST, 0);
+    RoboClaw_ForwardM2(&rcWrist, RC_ADDR_WRIST, 0);
+}
+
+void processCommand(uint8_t ch)
+{
+    char key = (char)ch;
+    if(key == '1') { pos1 = 25; mode1 = 0; integral1 = 0.0f; printf(">> Act1 -> 25%%\r\n"); }
+    else if(key == '2') { pos1 = 50; mode1 = 0; integral1 = 0.0f; printf(">> Act1 -> 50%%\r\n"); }
+    else if(key == '3') { pos1 = 75; mode1 = 0; integral1 = 0.0f; printf(">> Act1 -> 75%%\r\n"); }
+    else if(key == '4') { pos2 = 25; mode2 = 0; integral2 = 0.0f; printf(">> Act2 -> 25%%\r\n"); }
+    else if(key == '5') { pos2 = 50; mode2 = 0; integral2 = 0.0f; printf(">> Act2 -> 50%%\r\n"); }
+    else if(key == '6') { pos2 = 75; mode2 = 0; integral2 = 0.0f; printf(">> Act2 -> 75%%\r\n"); }
+    else if(key == '0') { pos1 = 0; pos2 = 0; mode1 = 0; mode2 = 0; integral1 = 0.0f; integral2 = 0.0f; printf(">> Ambos -> 0%%\r\n"); }
+    else if(key == '9') { pos1 = 100; pos2 = 100; mode1 = 0; mode2 = 0; integral1 = 0.0f; integral2 = 0.0f; printf(">> Ambos -> 100%%\r\n"); }
+    else if (key == ' ') { stopAllRoboClaw(); motorsRunning = false; printf(">> RoboClaw DETENIDO\r\n"); }
+    else if (key == 'X' || key == 'x') {
+        stopAllRoboClaw();
+        actStop();
+        pos1 = current1;
+        pos2 = current2;
+        vel1 = 0; vel2 = 0;          // CAMBIO: corta tambien modo velocidad
+        motorsRunning = false;
+        printf(">> TODO DETENIDO\r\n");
+    }
+    else if (key == 'A' || key == 'a') { if(rcOnline){ RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, 60); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Base IZQ\r\n"); } }
+    else if (key == 'D' || key == 'd') { if(rcOnline){ RoboClaw_BackwardM1(&rcBase, RC_ADDR_BASE, 60); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Base DER\r\n"); } }
+    else if (key == 'W' || key == 'w') { if(rcOnline){ RoboClaw_ForwardBackwardMixed(&rcWrist, RC_ADDR_WRIST, 94); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Muneca SUBIR\r\n"); } }
+    else if (key == 'S' || key == 's') { if(rcOnline){ RoboClaw_ForwardBackwardMixed(&rcWrist, RC_ADDR_WRIST, 34); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Muneca BAJAR\r\n"); } }
+    else if (key == 'Q' || key == 'q') { if(rcOnline){ RoboClaw_LeftRightMixed(&rcWrist, RC_ADDR_WRIST, 94); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Muneca ROT IZQ\r\n"); } }
+    else if (key == 'E' || key == 'e') { if(rcOnline){ RoboClaw_LeftRightMixed(&rcWrist, RC_ADDR_WRIST, 34); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Muneca ROT DER\r\n"); } }
+}
+
+void setBaseVel(int v){
+    if(!rcOnline) return;   // CAMBIO
+    if(v > 100) v = 100; if(v < -100) v = -100;
+    int mag = (abs(v) * MAX_BASE_DUTY) / 100;
+    if(v > 0)      RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, mag);
+    else if(v < 0) RoboClaw_BackwardM1(&rcBase, RC_ADDR_BASE, mag);
+    else           RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, 0);
+    if(v != 0){ lastCommandTime = HAL_GetTick(); motorsRunning = true; }
+}
+
+void updateWristDifferential(int pitch, int roll){
+    // 1. Cinemática Diferencial: Mezclamos los vectores en la STM32
+    int m1 = pitch + roll;
+    int m2 = pitch - roll;
+
+    // 2. Saturamos para no exceder los límites (-100 a 100)
+    if (m1 > 100) m1 = 100; if (m1 < -100) m1 = -100;
+    if (m2 > 100) m2 = 100; if (m2 < -100) m2 = -100;
+
+    // 3. Mapeamos de porcentaje (0-100) a PWM de RoboClaw (0-127)
+    int duty1 = (abs(m1) * 127) / 100;
+    int duty2 = (abs(m2) * 127) / 100;
+
+    // 4. Comandos directos a M1 (Motor Izquierdo de la muñeca)
+    if (m1 > 0) RoboClaw_ForwardM1(&rcWrist, RC_ADDR_WRIST, duty1);
+    else if (m1 < 0) RoboClaw_BackwardM1(&rcWrist, RC_ADDR_WRIST, duty1);
+    else RoboClaw_ForwardM1(&rcWrist, RC_ADDR_WRIST, 0);
+
+    // 5. Comandos directos a M2 (Motor Derecho de la muñeca)
+    if (m2 > 0) RoboClaw_ForwardM2(&rcWrist, RC_ADDR_WRIST, duty2);
+    else if (m2 < 0) RoboClaw_BackwardM2(&rcWrist, RC_ADDR_WRIST, duty2);
+    else RoboClaw_ForwardM2(&rcWrist, RC_ADDR_WRIST, 0);
+
+    // Actualizamos la bandera de timeout
+    if(pitch != 0 || roll != 0){
+        lastCommandTime = HAL_GetTick();
+        motorsRunning = true;
+    }
+}
+
+// BÚSCALO EN TU USER CODE BEGIN 4
+void parseRosCommand(char *line){
+    // Regresamos al código invencible
+    if (strncmp(line, "STOP", 4) == 0){
+        stopAllRoboClaw(); actStop();
+        pos1 = current1; pos2 = current2;
+        vel1 = 0; vel2 = 0;          // CAMBIO: corta tambien modo velocidad
+        baseVelCmd = pitchVelCmd = rollVelCmd = 0;
+        lastBaseVelCmd = lastPitchVelCmd = lastRollVelCmd = 0;
+        motorsRunning = false;
+        return;
+    }
+
+    if      (strncmp(line, "A1,", 3) == 0){ mode1 = 0; int p=atoi(line+3); if(p<0)p=0; if(p>100)p=100; pos1=p; }
+    else if (strncmp(line, "A2,", 3) == 0){ mode2 = 0; int p=atoi(line+3); if(p<0)p=0; if(p>100)p=100; pos2=p; }
+
+    else if (strncmp(line, "V1,", 3) == 0){ mode1 = 1; vel1 = atoi(line+3); lastCommandTime = HAL_GetTick(); motorsRunning = true; }
+    else if (strncmp(line, "V2,", 3) == 0){ mode2 = 1; vel2 = atoi(line+3); lastCommandTime = HAL_GetTick(); motorsRunning = true; }
+
+    else if (strncmp(line, "BV,", 3) == 0){ baseVelCmd = atoi(line+3); lastCommandTime = HAL_GetTick(); motorsRunning = true; }
+    else if (strncmp(line, "WP,", 3) == 0){ pitchVelCmd = atoi(line+3); lastCommandTime = HAL_GetTick(); motorsRunning = true; }
+    else if (strncmp(line, "WR,", 3) == 0){ rollVelCmd = atoi(line+3); lastCommandTime = HAL_GetTick(); motorsRunning = true; }
+}
+
+void pollUartCommands(void){
+    static char lineBuf[64];
+    static uint8_t lineLen = 0, inFrame = 0;
+    while(rxTail != rxHead){
+        uint8_t ch = rxRing[rxTail];
+        rxTail = (uint16_t)((rxTail + 1) % RX_RING_SIZE);
+        if(!inFrame){
+            if(ch == '#'){ inFrame = 1; lineLen = 0; }
+            else { processCommand(ch); }
+        } else {
+            if(ch == '\n' || ch == '\r' || lineLen >= sizeof(lineBuf)-1){
+                lineBuf[lineLen] = '\0';
+                parseRosCommand(lineBuf);
+                inFrame = 0; lineLen = 0;
+            } else {
+                lineBuf[lineLen++] = ch;
+            }
+        }
+    }
+}
+
+void USART2_IRQHandler(void)
+{
+    uint32_t sr = USART2->SR;
+    if(sr & USART_SR_RXNE)
+    {
+        uint8_t ch = (uint8_t)(USART2->DR & 0xFF);
+        uint16_t next = (uint16_t)((rxHead + 1) % RX_RING_SIZE);
+        if(next != rxTail){ rxRing[rxHead] = ch; rxHead = next; }
+    }
+    else if(sr & USART_SR_ORE) { (void)USART2->DR; }
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim->Instance == TIM3) { flag_control = 1; }
+}
+/* USER CODE END 4 */
+
+void Error_Handler(void)
+{
+  __disable_irq();
+  while (1) {}
+}
+#ifdef USE_FULL_ASSERT
+void assert_failed(uint8_t *file, uint32_t line) {}
+#endif
