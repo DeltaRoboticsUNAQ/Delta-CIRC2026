@@ -21,7 +21,7 @@ class LectorSTM32(Node):
             self.ser = serial.Serial(port, baud, timeout=0.02)
             self.get_logger().info(f'🚀 Puente Clásico Optimizado en {port}')
         except Exception as e:
-            self.get_logger().error(f'❌ ERROR CRÍTICO: No se pudo abrir {port}. ¿Cambió a ttyACM1?: {e}')
+            self.get_logger().error(f'❌ ERROR CRÍTICO: No se pudo abrir {port}: {e}')
             sys.exit(1)
 
         self.js_pub = self.create_publisher(JointState, '/joint_states', 10)
@@ -44,7 +44,6 @@ class LectorSTM32(Node):
         p = int(round(msg.data[4]))
         r = int(round(msg.data[5]))
 
-        # El protocolo invencible, agrupado para evitar el embotellamiento del USB
         if c == 0:
             trama = f"#A1,{v1}\n#A2,{v2}\n#BV,{b}\n#WP,{p}\n#WR,{r}\n"
         else:
@@ -53,8 +52,7 @@ class LectorSTM32(Node):
         try:
             self.ser.write(trama.encode('ascii'))
             self.ser.flush()
-        except Exception as e:
-            self.get_logger().error(f'Error de conexión: {e}')
+        except Exception: pass
 
     def reader_loop(self):
         buffer = b""
@@ -88,17 +86,9 @@ class LectorSTM32(Node):
         msg.name = ['bracket_joint', 'humerus_low_joint', 'forearm_low_joint', 'ubracket_joint', 'endeffector_joint']
 
         with self._lock:
-            # CAMBIO: convención unificada con arm_hid_teleop.calc_percentage():
-            #   pct = |rad| / |límite| * 100  ->  rad = -(pct/100) * |límite|
-            #   0 %  <-> 0.0 rad (retraído)
-            #   100% <-> límite negativo (estirado)
-            # Antes era: rad = -1.32 + (pct/100)*1.32, que es la ESPEJO de la del
-            # teleop. Al conectar, el teleop leía la posición real y comandaba la
-            # posición reflejada (p. ej., estando al 30% mandaba 70%).
-            # Si en tu hardware la simulación queda invertida vs. la realidad,
-            # el signo se ajusta aquí (o se invierte el cableado del pot).
-            humerus = -(self._raw['a1'] / 100.0) * 1.32
-            forearm = -(self._raw['a2'] / 100.0) * 1.216
+            # 0% físico = 0.0 rad (Contraído) | 100% físico = límite negativo (Estirado)
+            humerus = (self._raw['a1'] / 100.0) * -1.32
+            forearm = (self._raw['a2'] / 100.0) * -1.216
 
             base = self._raw['base'] * 0.0001
             ubracket = self._raw['pitch'] * 0.01
