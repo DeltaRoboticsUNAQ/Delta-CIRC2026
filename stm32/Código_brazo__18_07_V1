@@ -420,10 +420,12 @@ void actStop(void){
 
 void stopAllRoboClaw(void)
 {
-    if(!rcOnline) return;   // CAMBIO: no bloquear si no hay RoboClaws
-    RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, 0);
-    RoboClaw_ForwardM1(&rcWrist, RC_ADDR_WRIST, 0);
-    RoboClaw_ForwardM2(&rcWrist, RC_ADDR_WRIST, 0);
+    // 64 es el "Cero" en modo compatibilidad
+    RoboClaw_ForwardBackwardM1(&rcBase, RC_ADDR_BASE, 64);
+
+    // Paro de la muñeca
+    RoboClaw_ForwardBackwardM1(&rcWrist, RC_ADDR_WRIST, 64);
+    RoboClaw_ForwardBackwardM2(&rcWrist, RC_ADDR_WRIST, 64);
 }
 
 void processCommand(uint8_t ch)
@@ -447,8 +449,8 @@ void processCommand(uint8_t ch)
         motorsRunning = false;
         printf(">> TODO DETENIDO\r\n");
     }
-    else if (key == 'A' || key == 'a') { if(rcOnline){ RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, 60); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Base IZQ\r\n"); } }
-    else if (key == 'D' || key == 'd') { if(rcOnline){ RoboClaw_BackwardM1(&rcBase, RC_ADDR_BASE, 60); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Base DER\r\n"); } }
+    else if (key == 'A' || key == 'a') { RoboClaw_ForwardBackwardM1(&rcBase, RC_ADDR_BASE, 94); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Base IZQ\r\n"); }
+    else if (key == 'D' || key == 'd') { RoboClaw_ForwardBackwardM1(&rcBase, RC_ADDR_BASE, 34); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Base DER\r\n"); }
     else if (key == 'W' || key == 'w') { if(rcOnline){ RoboClaw_ForwardBackwardMixed(&rcWrist, RC_ADDR_WRIST, 94); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Muneca SUBIR\r\n"); } }
     else if (key == 'S' || key == 's') { if(rcOnline){ RoboClaw_ForwardBackwardMixed(&rcWrist, RC_ADDR_WRIST, 34); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Muneca BAJAR\r\n"); } }
     else if (key == 'Q' || key == 'q') { if(rcOnline){ RoboClaw_LeftRightMixed(&rcWrist, RC_ADDR_WRIST, 94); lastCommandTime = HAL_GetTick(); motorsRunning = true; printf(">> Muneca ROT IZQ\r\n"); } }
@@ -456,12 +458,15 @@ void processCommand(uint8_t ch)
 }
 
 void setBaseVel(int v){
-    if(!rcOnline) return;   // CAMBIO
     if(v > 100) v = 100; if(v < -100) v = -100;
-    int mag = (abs(v) * MAX_BASE_DUTY) / 100;
-    if(v > 0)      RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, mag);
-    else if(v < 0) RoboClaw_BackwardM1(&rcBase, RC_ADDR_BASE, mag);
-    else           RoboClaw_ForwardM1(&rcBase, RC_ADDR_BASE, 0);
+
+    // Mapeamos el porcentaje (-100 a 100) al formato de Compatibilidad (0 a 127)
+    // 64 es el centro absoluto (Detenido)
+    int val_compat = 64 + (v * 63) / 100;
+
+    // Usamos la función de compatibilidad a prueba de bugs
+    RoboClaw_ForwardBackwardM1(&rcBase, RC_ADDR_BASE, val_compat);
+
     if(v != 0){ lastCommandTime = HAL_GetTick(); motorsRunning = true; }
 }
 
