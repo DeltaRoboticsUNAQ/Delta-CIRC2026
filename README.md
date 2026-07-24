@@ -127,3 +127,31 @@ ros2 service call /calibrate_heading std_srvs/srv/Trigger
 
 Launch cabron
 ros2 launch circ_rover_navigation bringup.launch.py use_sim:=true gps:=true gps_port:=/dev/ttyACMx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Comunicacion:
+ros2 run circ_rover_hardware rover_base_node --ros-args -p port:=/dev/ttyACM0
+
+
+

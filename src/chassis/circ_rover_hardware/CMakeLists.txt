@@ -27,6 +27,12 @@ install(PROGRAMS
   RENAME rover_base
 )
 
+install(PROGRAMS
+  scripts/rover_comms_bridge.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME rover_comms_bridge
+)
+
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
