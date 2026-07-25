@@ -170,18 +170,23 @@ class ArmHidTeleop(Node):
         if btn5:
             self.cmd_mode = 1.0
             
+            # GOBERNADORES (1.0 = 100%, 0.15 = 15%)
+            # Ajusta estos valores hasta que el movimiento sea suave y controlable
+            LIMITADOR_PITCH = 0.15 
+            LIMITADOR_ROLL  = 0.25 
+            
             # ROTACIÓN DE MUÑECA (Roll) con el eje Lateral
             if abs(lateral_vel) > 0:
-                self.r_vel = -lateral_vel
-                self.positions['endeffector_joint'] += lateral_vel * 0.0002
+                self.r_vel = -lateral_vel * LIMITADOR_ROLL
+                self.positions['endeffector_joint'] += (lateral_vel * 0.0002) * LIMITADOR_ROLL
                 moved_sim = True; moved_real = True
             else:
                 self.r_vel = 0.0
 
             # PITCHEO DE MUÑECA (Pitch) con el eje Frontal
             if abs(frontal_vel) > 0:
-                self.p_vel = -frontal_vel
-                self.positions['ubracket_joint'] += frontal_vel * 0.0002
+                self.p_vel = -frontal_vel * LIMITADOR_PITCH
+                self.positions['ubracket_joint'] += (frontal_vel * 0.0002) * LIMITADOR_PITCH
                 moved_sim = True; moved_real = True
             else:
                 self.p_vel = 0.0
