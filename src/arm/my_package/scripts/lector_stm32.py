@@ -35,7 +35,8 @@ class LectorSTM32(Node):
         self.timer = self.create_timer(0.05, self.publish_joint_states)
 
     def cmd_cb(self, msg: Float64MultiArray):
-        if len(msg.data) < 6: return
+        # Ahora esperamos 7 datos
+        if len(msg.data) < 7: return
 
         c = int(msg.data[0])
         v1 = int(round(msg.data[1]))
@@ -43,11 +44,22 @@ class LectorSTM32(Node):
         b = int(round(msg.data[3]))
         p = int(round(msg.data[4]))
         r = int(round(msg.data[5]))
+        claw = int(round(msg.data[6])) # <--- NUEVO COMANDO DE GARRA
 
+        # Tu Firewall de la muñeca sigue aquí intacto
+        if self._raw['pitch'] < -440 and p < 0: 
+            p = 0
+            self.get_logger().warn("⚠️ LÍMITE SUPERIOR - Subida bloqueada")
+            
+        if self._raw['pitch'] > 545 and p > 0: 
+            p = 0
+            self.get_logger().warn("⚠️ LÍMITE INFERIOR - Bajada bloqueada")
+
+        # Agregamos #CL a la trama serial
         if c == 0:
-            trama = f"#A1,{v1}\n#A2,{v2}\n#BV,{b}\n#WP,{p}\n#WR,{r}\n"
+            trama = f"#A1,{v1}\n#A2,{v2}\n#BV,{b}\n#WP,{p}\n#WR,{r}\n#CL,{claw}\n"
         else:
-            trama = f"#V1,{v1}\n#V2,{v2}\n#BV,{b}\n#WP,{p}\n#WR,{r}\n"
+            trama = f"#V1,{v1}\n#V2,{v2}\n#BV,{b}\n#WP,{p}\n#WR,{r}\n#CL,{claw}\n"
 
         try:
             self.ser.write(trama.encode('ascii'))
@@ -69,15 +81,31 @@ class LectorSTM32(Node):
     def parse_line(self, line):
         if not line.startswith('J,'): return
         parts = line.split(',')
-        if len(parts) == 6:
+        
+        # Ahora esperamos 8 valores
+        if len(parts) == 8:
             try:
                 with self._lock:
                     self._raw['a1'] = float(parts[1])
                     self._raw['a2'] = float(parts[2])
                     self._raw['base'] = float(parts[3])
-                    self._raw['pitch'] = float(parts[4])
-                    self._raw['roll'] = float(parts[5])
+                    
+                    enc_m1 = int(parts[6])
+                    enc_m2 = int(parts[7])
+                    
+                    # Cinemática diferencial inversa
+                    pitch_real = (enc_m1 + enc_m2) / 2.0
+                    roll_real = (enc_m1 - enc_m2) / 2.0
+                    
+                    self._raw['pitch'] = pitch_real
+                    self._raw['roll'] = roll_real
+                    
+                    # Usamos el Logger de ROS para forzar impresión en pantalla
+                    self.get_logger().info(f"PITCH: {pitch_real:8.1f}  |  ROLL: {roll_real:8.1f}  ||  Raw M1: {enc_m1}, Raw M2: {enc_m2}")
             except ValueError: pass
+        else:
+            # Si por alguna razón llega con más o menos comas, que nos avise
+            self.get_logger().warn(f"Llegaron {len(parts)} datos en vez de 8. Trama ignorada: {line}")
 
     def publish_joint_states(self):
         msg = JointState()
@@ -91,6 +119,8 @@ class LectorSTM32(Node):
             forearm = (self._raw['a2'] / 100.0) * -1.216
 
             base = self._raw['base'] * 0.0001
+            
+            # Nota: cuando calibremos, ajustaremos estos multiplicadores (0.01)
             ubracket = self._raw['pitch'] * 0.01
             endeffector = self._raw['roll'] * 0.01
 

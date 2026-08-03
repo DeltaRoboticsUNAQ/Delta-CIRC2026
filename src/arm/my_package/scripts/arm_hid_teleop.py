@@ -43,6 +43,7 @@ class ArmHidTeleop(Node):
         self.b_vel = 0.0
         self.p_vel = 0.0
         self.r_vel = 0.0
+        self.c_vel = 0.0
 
         self.stop_timer = None
         self.is_manual_moving = False
@@ -97,11 +98,12 @@ class ArmHidTeleop(Node):
 
     def publish_hardware_command(self):
         msg = Float64MultiArray()
-        msg.data = [float(self.cmd_mode), float(self.val1), float(self.val2), float(self.b_vel), float(self.p_vel), float(self.r_vel)]
+        # Ahora mandamos 7 datos en el arreglo
+        msg.data = [float(self.cmd_mode), float(self.val1), float(self.val2), float(self.b_vel), float(self.p_vel), float(self.r_vel), float(self.c_vel)]
         self.cmd_pub.publish(msg)
 
     def stop_roboclaws(self):
-        self.b_vel = 0.0; self.p_vel = 0.0; self.r_vel = 0.0
+        self.b_vel = 0.0; self.p_vel = 0.0; self.r_vel = 0.0; self.c_vel = 0.0
         if self.cmd_mode == 1.0:
             self.val1 = 0.0; self.val2 = 0.0
         else:
@@ -140,12 +142,10 @@ class ArmHidTeleop(Node):
             time.sleep(0.2)
             return
 
-        # BTN 6 y 8 (Presets)
-        if btn6 or btn8:
+        # BTN 8 (Presets) - Le quitamos el btn6 porque ahora es para la garra
+        if btn8:
             self.cmd_mode = 0.0  
-            if btn6: target = self.PRESET_MESA_ALTA
-            elif btn8: target = self.PRESET_XLR
-
+            target = self.PRESET_XLR
             for joint, rad in target.items(): self.positions[joint] = rad
             self.clamp_limits()
             self.val1 = self.calc_percentage('humerus_low_joint')
@@ -165,15 +165,33 @@ class ArmHidTeleop(Node):
         frontal_vel = -self.map_analog_to_vel(frontal, DEADZONE_LOW, DEADZONE_HIGH)
 
         # ==========================================
+        # 🦀 MODO GARRA (BOTÓN 6 MANTENIDO)
+        # ==========================================
+        if btn6:
+            self.cmd_mode = 1.0
+            
+            # GOBERNADOR DE GARRA (Si cierra muy duro, bájale a 0.30)
+            LIMITADOR_GARRA = 0.60 
+            
+            if abs(frontal_vel) > 0:
+                self.c_vel = frontal_vel * LIMITADOR_GARRA
+                moved_real = True
+            else:
+                self.c_vel = 0.0
+            
+            # Congelamos base, actuadores y muñeca por seguridad
+            self.b_vel = 0.0; self.p_vel = 0.0; self.r_vel = 0.0
+            self.val1 = 0.0; self.val2 = 0.0
+
+        # ==========================================
         # 🎯 MODO MUÑECA (BOTÓN 5 MANTENIDO)
         # ==========================================
-        if btn5:
+        elif btn5: # <--- ¡ELIF! AQUÍ ESTABA LA FUGA DE MOVIMIENTO
             self.cmd_mode = 1.0
             
             # GOBERNADORES (1.0 = 100%, 0.15 = 15%)
-            # Ajusta estos valores hasta que el movimiento sea suave y controlable
             LIMITADOR_PITCH = 0.15 
-            LIMITADOR_ROLL  = 0.25 
+            LIMITADOR_ROLL  = 0.20 
             
             # ROTACIÓN DE MUÑECA (Roll) con el eje Lateral
             if abs(lateral_vel) > 0:
@@ -197,7 +215,7 @@ class ArmHidTeleop(Node):
             self.val2 = 0.0
 
         # ==========================================
-        # 🦾 MODO BRAZO NORMAL (BOTÓN 5 SUELTO)
+        # 🦾 MODO BRAZO NORMAL (BOTÓN 5 Y 6 SUELTOS)
         # ==========================================
         else:
             self.p_vel = 0.0
