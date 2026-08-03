@@ -77,9 +77,11 @@ class ArmHidTeleop(Node):
                     idx = msg.name.index(name)
                     self.positions[name] = msg.position[idx]
             self.initialized = True
-            self.cmd_mode = 0.0
-            self.val1 = self.calc_percentage('humerus_low_joint')
-            self.val2 = self.calc_percentage('forearm_low_joint')
+            
+            self.cmd_mode = 1.0
+            self.val1 = 0.0
+            self.val2 = 0.0
+            
             self.publish_hardware_command()
 
     def calc_percentage(self, joint_name):
@@ -215,17 +217,28 @@ class ArmHidTeleop(Node):
             self.val2 = 0.0
 
         # ==========================================
-        # 🦾 MODO BRAZO NORMAL (BOTÓN 5 Y 6 SUELTOS)
+        # 🦾 MODO BRAZO NORMAL (BOTONES 5 Y 6 SUELTOS)
         # ==========================================
         else:
             self.p_vel = 0.0
             self.r_vel = 0.0
 
+            # 🔥 GOBERNADOR DE LA BASE 🔥
+            # Antes estaba clavado en 60.0. Ahorita lo bajamos a 25.0.
+            # Juega con este número si lo sientes muy lento o todavía muy brusco.
+            LIMITADOR_BASE = 25.0 
+
             # Twist -> Base
             if twist < DEADZONE_LOW:
-                self.positions['bracket_joint'] += self.step; self.b_vel = 60.0; moved_sim = True; moved_real = True
+                self.positions['bracket_joint'] += self.step
+                self.b_vel = LIMITADOR_BASE
+                moved_sim = True
+                moved_real = True
             elif twist > DEADZONE_HIGH:
-                self.positions['bracket_joint'] -= self.step; self.b_vel = -60.0; moved_sim = True; moved_real = True
+                self.positions['bracket_joint'] -= self.step
+                self.b_vel = -LIMITADOR_BASE
+                moved_sim = True
+                moved_real = True
             else: 
                 self.b_vel = 0.0
 
