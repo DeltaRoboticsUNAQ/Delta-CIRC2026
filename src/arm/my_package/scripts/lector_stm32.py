@@ -35,8 +35,8 @@ class LectorSTM32(Node):
         self.timer = self.create_timer(0.05, self.publish_joint_states)
 
     def cmd_cb(self, msg: Float64MultiArray):
-        # Ahora esperamos 7 datos
-        if len(msg.data) < 7: return
+        # Ahora esperamos 8 datos
+        if len(msg.data) < 8: return
 
         c = int(msg.data[0])
         v1 = int(round(msg.data[1]))
@@ -44,9 +44,9 @@ class LectorSTM32(Node):
         b = int(round(msg.data[3]))
         p = int(round(msg.data[4]))
         r = int(round(msg.data[5]))
-        claw = int(round(msg.data[6])) # <--- NUEVO COMANDO DE GARRA
+        claw = int(round(msg.data[6]))
+        pin_aux = int(round(msg.data[7])) # <--- NUEVO ESTADO DEL PIN
 
-        # Tu Firewall de la muñeca sigue aquí intacto
         if self._raw['pitch'] < -440 and p < 0: 
             p = 0
             self.get_logger().warn("⚠️ LÍMITE SUPERIOR - Subida bloqueada")
@@ -55,11 +55,11 @@ class LectorSTM32(Node):
             p = 0
             self.get_logger().warn("⚠️ LÍMITE INFERIOR - Bajada bloqueada")
 
-        # Agregamos #CL a la trama serial
+        # Agregamos #PN a la trama
         if c == 0:
-            trama = f"#A1,{v1}\n#A2,{v2}\n#BV,{b}\n#WP,{p}\n#WR,{r}\n#CL,{claw}\n"
+            trama = f"#A1,{v1}\n#A2,{v2}\n#BV,{b}\n#WP,{p}\n#WR,{r}\n#CL,{claw}\n#PN,{pin_aux}\n"
         else:
-            trama = f"#V1,{v1}\n#V2,{v2}\n#BV,{b}\n#WP,{p}\n#WR,{r}\n#CL,{claw}\n"
+            trama = f"#V1,{v1}\n#V2,{v2}\n#BV,{b}\n#WP,{p}\n#WR,{r}\n#CL,{claw}\n#PN,{pin_aux}\n"
 
         try:
             self.ser.write(trama.encode('ascii'))

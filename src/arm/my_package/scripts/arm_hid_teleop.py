@@ -44,6 +44,8 @@ class ArmHidTeleop(Node):
         self.p_vel = 0.0
         self.r_vel = 0.0
         self.c_vel = 0.0
+        self.aux_pin_state = 0.0
+        self.btn10_last = False
 
         self.stop_timer = None
         self.is_manual_moving = False
@@ -100,8 +102,10 @@ class ArmHidTeleop(Node):
 
     def publish_hardware_command(self):
         msg = Float64MultiArray()
-        # Ahora mandamos 7 datos en el arreglo
-        msg.data = [float(self.cmd_mode), float(self.val1), float(self.val2), float(self.b_vel), float(self.p_vel), float(self.r_vel), float(self.c_vel)]
+        # Ahora mandamos 8 datos
+        msg.data = [float(self.cmd_mode), float(self.val1), float(self.val2), 
+                    float(self.b_vel), float(self.p_vel), float(self.r_vel), 
+                    float(self.c_vel), float(self.aux_pin_state)]
         self.cmd_pub.publish(msg)
 
     def stop_roboclaws(self):
@@ -120,7 +124,14 @@ class ArmHidTeleop(Node):
 
         trigger = report[6] & 1; btn2 = report[6] & 2; btn3 = report[6] & 4; btn4 = report[6] & 8
         btn5 = report[6] & 16; btn6 = report[6] & 32; btn7 = report[6] & 64; btn8 = report[6] & 128
+        btn10 = report[7] & 2
 
+        # Lógica de Toggle (Cambio de estado) con seguro anti-rebote
+        if btn10 and not self.btn10_last:
+            self.aux_pin_state = 1.0 if self.aux_pin_state == 0.0 else 0.0
+            self.publish_hardware_command() # Forzamos el envío inmediato
+        self.btn10_last = bool(btn10)
+        
         if trigger:
             if self.stop_timer: self.stop_timer.cancel()
             self.cmd_mode = 1.0
