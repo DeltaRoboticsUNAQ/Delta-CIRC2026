@@ -49,7 +49,19 @@ class ArmHidTeleop(Node):
 
         self.stop_timer = None
         self.is_manual_moving = False
+        
+        # --- MACRO: Giro de muñeca 180° ---
+        self.WRIST_ROTATE_VEL = 70.0            # velocidad de r_vel durante el giro
+        self.WRIST_INTEGRATION_FACTOR = 0.0002  # mismo factor que el control manual de muñeca
+        self.WRIST_TOLERANCE = 0.03             # ~1.7° de tolerancia para considerar "llegó"
+        self.MACRO_TIMEOUT = 8.0                # segundos, seguridad anti-cuelgue
+        self.macro_target = None
+        self.macro_timeout_start = None
+        self.btn7_last = False
 
+        self.stop_timer = None
+        self.is_manual_moving = False
+        
         self.joint_sub = self.create_subscription(JointState, '/joint_states', self.joint_state_cb, 10)
         self.cmd_pub = self.create_publisher(Float64MultiArray, '/arm/command', 10)
         self.action_client = ActionClient(self, FollowJointTrajectory, '/arm_controller/follow_joint_trajectory')
@@ -116,6 +128,72 @@ class ArmHidTeleop(Node):
             self.val1 = self.calc_percentage('humerus_low_joint')
             self.val2 = self.calc_percentage('forearm_low_joint')
         self.publish_hardware_command()
+
+    # ==========================================
+    # 🔄 MACRO: GIRO DE MUÑECA 180°
+    # ==========================================
+    def start_wrist_rotation(self):
+        """Calcula el objetivo (+180° dentro de los límites del joint) e inicia el giro."""
+        # Cancela cualquier stop_timer pendiente de un movimiento manual previo:
+        # si sigue vivo, dispararía a mitad de la macro y pondría r_vel en 0,
+        # chocando con las publicaciones de macro_step_cb -> se ve como vibración.
+        if self.stop_timer:
+            self.stop_timer.cancel()
+            self.stop_timer = None
+        self.is_manual_moving = False
+
+        current = self.positions['endeffector_joint']
+        target = current + math.pi
+        limit_min, limit_max = self.limits['endeffector_joint']
+
+        # Si el objetivo se sale de los límites, usamos el ángulo equivalente
+        # del otro lado (mismo punto físico, joint entre -180° y 180°)
+        if target > limit_max:
+            target -= 2 * math.pi
+        elif target < limit_min:
+            target += 2 * math.pi
+
+        self.macro_target = target
+        self.macro_running = True
+        self.macro_timeout_start = time.time()
+        self.get_logger().info(
+            f'🔄 Girando muñeca 180° -> objetivo {math.degrees(target):.1f}°'
+        )
+
+    def macro_step_cb(self):
+        """Se ejecuta a 20Hz. Mueve r_vel hacia el objetivo hasta llegar o hasta timeout."""
+        if not self.macro_running or self.macro_target is None:
+            return
+
+        if time.time() - self.macro_timeout_start > self.MACRO_TIMEOUT:
+            self.get_logger().warn('⚠️ Macro de muñeca: tiempo agotado, abortando.')
+            self.finish_macro()
+            return
+
+        current = self.positions['endeffector_joint']
+        error = self.macro_target - current
+
+        if abs(error) < self.WRIST_TOLERANCE:
+            self.finish_macro()
+            return
+
+        direction = 1.0 if error > 0 else -1.0
+        self.r_vel = direction * self.WRIST_ROTATE_VEL
+        self.positions['endeffector_joint'] += direction * self.WRIST_ROTATE_VEL * self.WRIST_INTEGRATION_FACTOR
+        self.clamp_limits()
+
+        self.cmd_mode = 1.0
+        self.b_vel = 0.0; self.p_vel = 0.0; self.c_vel = 0.0
+        self.val1 = 0.0; self.val2 = 0.0
+        self.publish_hardware_command()
+
+    def finish_macro(self):
+        """Detiene el motor de la muñeca y devuelve el control manual."""
+        self.r_vel = 0.0
+        self.publish_hardware_command()
+        self.macro_running = False
+        self.macro_target = None
+        self.get_logger().info('✅ Rotación de 180° completada.')
 
     def read_joystick_cb(self):
         if not self.initialized or self.macro_running: return
